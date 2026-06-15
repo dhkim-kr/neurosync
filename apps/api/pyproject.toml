@@ -16,6 +16,10 @@ dependencies = [
     "argon2-cffi>=23.1.0",
     "pyjwt>=2.10.0",
     "cryptography>=44.0.0",
+    # RAG (apps/api/src/rag): 런타임 임베딩(Upstage, OpenAI 호환) + 오프라인 적재(sync psycopg).
+    # pgvector 연산은 raw SQL(text())이라 별도 라이브러리 불필요 (asyncpg로 동작).
+    "openai>=1.50.0",
+    "psycopg[binary]>=3.2.0",
 ]
 
 [dependency-groups]

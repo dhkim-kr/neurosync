@@ -8,6 +8,7 @@ Phase 1a Day 1~2 부트스트랩 — /health 만 노출.
 from fastapi import FastAPI
 
 from src import __version__
+from src.api.chat import router as chat_router
 from src.api.safety import router as safety_router
 
 app = FastAPI(
@@ -17,6 +18,7 @@ app = FastAPI(
 )
 
 app.include_router(safety_router)
+app.include_router(chat_router)
 
 
 @app.get("/health")
