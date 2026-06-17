@@ -1,4 +1,4 @@
-# Friendli Dedicated EXAONE API 기능 정리
+# Friendli Dedicated EXAONE API 기능 정리v
 
 기준 문서:
 
@@ -38,8 +38,8 @@ LG_K_EXAONE_ENDPOINT_ID=YOUR_LG_K_EXAONE_ENDPOINT_ID
 # API KEY
 #######################################
 LG_K_EXAONE_BASE_MODEL=LGAI-EXAONE/EXAONE-4.0.1-32B
-LG_K_EXAONE_API_KEY=flp_wPJGi0ECi2A3tjZxtYPqdbRW3HIUqi7E0BnGbM4vMkwf6
-LG_K_EXAONE_ENDPOINT_ID=depmkuykpfon9lg
+LG_K_EXAONE_API_KEY=<YOUR_FRIENDLI_API_KEY>
+LG_K_EXAONE_ENDPOINT_ID=<YOUR_ENDPOINT_ID>
 #######################################
 
 

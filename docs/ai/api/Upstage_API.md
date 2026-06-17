@@ -27,7 +27,7 @@ UPSTAGE_CHAT_MODEL=solar-pro3
 
 # API KEY
 ################################################
-UPSTAGE_API_KEY=up_P7vzCgDt8yjQ0gfJOmJAw1NaCu3kU
+UPSTAGE_API_KEY=<YOUR_UPSTAGE_API_KEY>
 ################################################
 
 
