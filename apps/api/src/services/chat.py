@@ -18,7 +18,7 @@ import logging
 import uuid
 from typing import Any
 
-from contracts.chat import ChatMessage, ChatRequest
+from contracts.chat import ChatMessage, ChatRequest, Grounding
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -59,6 +59,28 @@ async def _recent_messages(
     return out
 
 
+async def _build_grounding(
+    db: AsyncSession, session_id: uuid.UUID, context: list[ChatMessage]
+) -> Grounding | None:
+    """pgvector RAG grounding (best-effort — 검색 실패해도 대화는 계속 진행).
+
+    rag 의존성/스키마/임베딩이 아직 없으면 조용히 None (대화 비크리티컬)."""
+    last_user = next((m.content for m in reversed(context) if m.role == "user"), None)
+    if not last_user:
+        return None
+    try:
+        from src.rag.retrieval import retrieve_grounding
+
+        sess = (
+            await db.execute(select(Session).where(Session.id == session_id))
+        ).scalar_one_or_none()
+        patient_id = sess.patient_id if sess is not None else None
+        return await retrieve_grounding(db, last_user, patient_id=patient_id)
+    except Exception:  # noqa: BLE001 — grounding is best-effort
+        logger.info("chat.grounding.skipped", exc_info=True)
+        return None
+
+
 async def respond(
     db: AsyncSession,
     *,
@@ -70,8 +92,9 @@ async def respond(
     or None if generation failed (caller simply omits the AI reply)."""
     try:
         context = await _recent_messages(db, session_id, limit=CHAT_CONTEXT_TURNS)
+        grounding = await _build_grounding(db, session_id, context)
         result = await ai_client.chat_respond(
-            ChatRequest(session_id=session_id, messages=context)
+            ChatRequest(session_id=session_id, messages=context, grounding=grounding)
         )
     except AIClientError as exc:
         logger.info("chat.respond.unavailable", extra={"error": str(exc)})

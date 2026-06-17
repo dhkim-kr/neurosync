@@ -1,0 +1,70 @@
+# postgres (pgvector) — Phase 2 배포 매니페스트 (Platform 소유).
+#
+# ⚠️ 이미지는 반드시 pgvector/pgvector — RAG 벡터검색(rag.* embedding vector(4096))이
+#    CREATE EXTENSION vector 를 요구. 일반 postgres 이미지면 alembic 0005 실패.
+# 데이터·스키마는 여기 없음:
+#   - 스키마 → alembic (apps/api), initContainer 또는 Job 으로 `alembic upgrade head`
+#   - 코퍼스 데이터 → seed Job (pg_restore 아티팩트 또는 src.rag.tooling 로더)
+# 자격증명은 Secret(ns-db-credentials, KMS) 참조. 운영은 관리형 DB(RDS/CloudSQL) 검토.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels: { app: postgres }
+spec:
+  clusterIP: None          # headless — StatefulSet 안정 DNS
+  selector: { app: postgres }
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+data:
+  POSTGRES_DB: neurosync
+  POSTGRES_USER: neurosync
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector: { matchLabels: { app: postgres } }
+  template:
+    metadata:
+      labels: { app: postgres }
+    spec:
+      containers:
+        - name: postgres
+          image: pgvector/pgvector:pg16     # ← pgvector 필수
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef: { name: postgres-config }
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: ns-db-credentials, key: password }
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec: { command: ["pg_isready", "-U", "neurosync", "-d", "neurosync"] }
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          resources:
+            requests: { cpu: "500m", memory: "1Gi" }
+            limits: { cpu: "2", memory: "4Gi" }
+  volumeClaimTemplates:
+    - metadata: { name: data }
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests: { storage: 10Gi }     # 코퍼스+임베딩 ~수백MB, 여유

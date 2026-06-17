@@ -13,7 +13,7 @@ name: neuro-sync-dev
 
 services:
   postgres:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16   # RAG 벡터검색용 pgvector 확장 포함 (일반 postgres 이미지면 0005 마이그레이션 실패)
     container_name: ns-postgres
     environment:
       POSTGRES_USER: neurosync
