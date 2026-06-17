@@ -1,0 +1,70 @@
+{
+  "patient_id": "VP-005",
+  "vendor": "upstage",
+  "model": "solar-pro3",
+  "generated_at": "2026-06-16T14:54:39+09:00",
+  "messages": [
+    {
+      "id": "msg_001",
+      "role": "assistant",
+      "content": "안녕하세요, 최유진님. 지난번 상담을 기억합니다. 오늘은 몸 상태와 기분 변화를 좀 더 자세히 얘기해 주실 수 있을까요?",
+      "turn": 1
+    },
+    {
+      "id": "msg_002",
+      "role": "user",
+      "content": "네, 안녕하세요. 몸도 좀 안 좋고 요즘 일도 힘들어서 왔어요.",
+      "turn": 1
+    },
+    {
+      "id": "msg_003",
+      "role": "assistant",
+      "content": "두통약을 주 3~4회 정도 복용하고 계신가요? 혹시 복용 후 부작용은 없었나요?",
+      "turn": 2
+    },
+    {
+      "id": "msg_004",
+      "role": "user",
+      "content": "네, 가끔 먹어요. 속이 안 좋아서 소화제도 같이 먹곤 해요. 근데 약은 별 문제 없어요.",
+      "turn": 2
+    },
+    {
+      "id": "msg_005",
+      "role": "assistant",
+      "content": "잠은 잘 주무시나요? 아침에 일어나면 개운하신가요, 아니면 여전히 피로감이 남아 있나요?",
+      "turn": 3
+    },
+    {
+      "id": "msg_006",
+      "role": "user",
+      "content": "잠은 자는데 일어나면 몸이 무겁고, 하루 종일 피곤해요. 자꾸 졸려서 일을 못 할 때도 있어요.",
+      "turn": 3
+    }
+  ],
+  "extracted_slots": {
+    "chief_complaint": [
+      "3개월 전부터 두통이 잦고, 소화가 안 되고, 항상 피곤하다. 내과에서 이상 없다고 해서 정신과를 권유받았다."
+    ],
+    "onset": "",
+    "duration": "",
+    "triggers": "",
+    "sleep": "환자 발화에서 '잠' 관련 내용 감지됨",
+    "appetite": "환자 발화에서 '먹' 관련 내용 감지됨",
+    "mood": "환자 발화에서 '힘들' 관련 내용 감지됨",
+    "anxiety": "",
+    "concentration": "",
+    "functional_impairment": "",
+    "medication": "환자 발화에서 '약' 관련 내용 감지됨",
+    "past_psychiatric_history": ""
+  },
+  "safety_triggers": [],
+  "metadata": {
+    "total_turns": 3,
+    "total_messages": 6,
+    "latency_ms": 4961,
+    "total_tokens": 1582,
+    "prompt_tokens": 988,
+    "completion_tokens": 594,
+    "finish_reason": "stop"
+  }
+}

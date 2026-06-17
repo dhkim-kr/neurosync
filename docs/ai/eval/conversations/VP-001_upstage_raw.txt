@@ -1,0 +1,1 @@
+{"assistant_response":"안녕하세요, 김서연님. 정신건강의학과 진료를 앞두고 계신데 긴장되시죠? 먼저 편하게 말씀해 주시면 도움이 될 것 같아요. 현재 가장 힘든 점은 무엇인가요?","slot_updates":{"chief_complaint":"잠을 잘 못 자고, 출근할 때마다 가슴이 답답하고 의욕이 없다"},"risk_level":"none","requires_human_review":false,"reason_summary":"opening greeting and first open-ended question"}
