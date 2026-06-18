@@ -1,0 +1,253 @@
+{
+  "test_id": "TC-006",
+  "description": "Longitudinal pair — same patient (VP-007 오태민) with minimal first chat vs. full longitudinal input",
+  "patient_ref": "VP-007",
+  "first_chat_input": {
+    "session_id": "sess-tc006-first-chat",
+    "request_id": "req-tc006-001",
+    "extra": {},
+    "slots": {
+      "chief_complaint": "식당을 접은 뒤로 아무것도 할 수가 없음",
+      "onset": null,
+      "duration": null,
+      "triggers": null,
+      "sleep": null,
+      "appetite": null,
+      "mood": null,
+      "anxiety": null,
+      "concentration": null,
+      "functional_impairment": null,
+      "medication": null,
+      "past_psychiatric_history": null,
+      "risk_factors": null
+    },
+    "conversation_history": [
+      {
+        "role": "assistant",
+        "content": "안녕하세요, 오늘 어떤 점이 불편하셔서 오셨나요?"
+      },
+      {
+        "role": "user",
+        "content": "...네. 식당 하다가 접었는데요. 그 뒤로 아무것도 못 하겠어요."
+      },
+      {
+        "role": "assistant",
+        "content": "많이 힘드셨겠어요. 좀 더 자세히 이야기해주실 수 있으세요?"
+      },
+      {
+        "role": "user",
+        "content": "그냥... 아무것도 하기 싫어요. 사람도 만나기 싫고요."
+      },
+      {
+        "role": "assistant",
+        "content": "언제부터 그런 느낌이 드셨나요?"
+      },
+      {
+        "role": "user",
+        "content": "가게 접고 나서부터요. 더 말하기 싫어요."
+      }
+    ],
+    "scale_scores": [
+      {
+        "scale_name": "PHQ-9",
+        "total_score": 22,
+        "severity": "severe"
+      }
+    ],
+    "risk_events": [],
+    "ocr_documents": [],
+    "prior_handoff": null,
+    "is_first_visit": true
+  },
+  "longitudinal_input": {
+    "session_id": "sess-tc006-longitudinal",
+    "request_id": "req-tc006-002",
+    "extra": {
+      "medical_records": [
+        {
+          "visit_date": "2026-04-17",
+          "visit_number": 1,
+          "diagnosis": "Severe depressive episode",
+          "phq9": 22,
+          "gad7": 18,
+          "notes": "초진. 사업 실패 후 심한 우울, 자살 사고 간접 표현. 세르트랄린 50mg 처방."
+        },
+        {
+          "visit_date": "2026-05-15",
+          "visit_number": 2,
+          "diagnosis": "Severe depressive episode, slightly improved",
+          "phq9": 19,
+          "gad7": 15,
+          "notes": "약간 개선. 수면 소폭 호전. 자살 사고 감소. 세르트랄린 100mg 증량."
+        }
+      ],
+      "prescriptions": [
+        {
+          "drug_name": "세르트랄린 (Sertraline)",
+          "dose": "100mg",
+          "frequency": "1일 1회",
+          "duration": "2개월째 (50mg→100mg 증량)",
+          "prescriber": "본원 주치의"
+        }
+      ]
+    },
+    "slots": {
+      "chief_complaint": "식당 폐업 후 심한 우울 지속. 약 복용 중이나 아직 힘듦.",
+      "onset": "약 2개월 전 (폐업 시점)",
+      "duration": "2개월",
+      "triggers": "사업 실패 (식당 폐업), 경제적 부채 3억원, 가족 내 갈등 심화 (처가와의 관계 악화)",
+      "sleep": "개선 중 — 이전 2-3시간에서 현재 4-5시간. 입면 지연은 여전하나 조기 각성 빈도 감소.",
+      "appetite": "소폭 회복 — 하루 1-2끼 식사. 체중 감소 둔화.",
+      "mood": "무기력감 지속되나 이전 대비 약간 개선. 절망감 빈도 감소. 간헐적으로 희망적 발언 등장.",
+      "anxiety": "공황 증상 빈도 감소 (주 4-5회→주 2-3회). 강도는 여전히 심함.",
+      "concentration": "약간 개선 — 짧은 기사 읽기 가능. 장시간 집중은 여전히 어려움.",
+      "functional_impairment": "소폭 개선 — 간헐적 외출 (편의점), 개인 위생 주 3-4회로 개선. 사회 활동은 여전히 회피.",
+      "medication": "세르트랄린 100mg QD (50mg에서 증량, 1개월째). 부작용: 경미한 소화불량.",
+      "past_psychiatric_history": "2개월 전 본원 초진. 2회 방문. PHQ-9 추이: 22→19. GAD-7 추이: 18→15.",
+      "risk_factors": "자살 사고 이전 대비 감소. '예전만큼 끝내고 싶은 생각은 줄었다'고 보고. 그러나 완전 소실은 아님. 경제적 스트레스 지속."
+    },
+    "conversation_history": [
+      {
+        "role": "assistant",
+        "content": "오태민님, 안녕하세요. 지난번 방문 이후로 어떻게 지내셨나요?"
+      },
+      {
+        "role": "user",
+        "content": "좀... 나아진 것 같기도 하고 아닌 것 같기도 하고요."
+      },
+      {
+        "role": "assistant",
+        "content": "나아진 부분과 아직 힘든 부분을 이야기해주실 수 있으세요?"
+      },
+      {
+        "role": "user",
+        "content": "잠은 좀 나아졌어요. 예전에 두세 시간밖에 못 잤는데 지금은 네다섯 시간은 자는 것 같아요. 근데 여전히 누우면 한참 걸리긴 해요."
+      },
+      {
+        "role": "assistant",
+        "content": "수면이 개선되셨군요. 식사는 어떠세요?"
+      },
+      {
+        "role": "user",
+        "content": "하루에 한두 끼는 먹어요. 예전처럼 아예 못 먹는 건 아닌데, 맛있다는 느낌은 없어요. 그냥 먹어야 하니까 먹는 거죠."
+      },
+      {
+        "role": "assistant",
+        "content": "약은 잘 드시고 계세요? 용량이 늘었는데 괜찮으세요?"
+      },
+      {
+        "role": "user",
+        "content": "네, 100mg으로 올린 거 먹고 있어요. 처음에 속이 좀 안 좋았는데 지금은 괜찮아요. 빠뜨리지 않고 먹고 있어요."
+      },
+      {
+        "role": "assistant",
+        "content": "잘하고 계세요. 기분은 어떠세요?"
+      },
+      {
+        "role": "user",
+        "content": "아직 힘들어요. 근데... 예전처럼 하루 종일 천장만 보고 있는 건 아니에요. 가끔 편의점이라도 나가요. 작은 거지만요."
+      },
+      {
+        "role": "assistant",
+        "content": "작은 변화도 중요한 거예요. 불안 증상은 어떠세요? 공황 발작이 있으셨는데요."
+      },
+      {
+        "role": "user",
+        "content": "줄긴 했어요. 예전에는 거의 매일이었는데 지금은 일주일에 두세 번? 근데 올 때는 여전히 무서워요. 심장이 터질 것 같고요."
+      },
+      {
+        "role": "assistant",
+        "content": "집중력은 어떠세요?"
+      },
+      {
+        "role": "user",
+        "content": "뉴스 기사 같은 짧은 건 읽을 수 있게 됐어요. 그런데 오래 집중은 아직 안 돼요."
+      },
+      {
+        "role": "assistant",
+        "content": "사람들은 만나고 계세요?"
+      },
+      {
+        "role": "user",
+        "content": "아직 못 만나요. 형이 연락 왔는데 안 받았어요. 아직은... 사람 만날 힘이 없어요."
+      },
+      {
+        "role": "assistant",
+        "content": "빚 문제나 경제적인 부분은 어떠세요?"
+      },
+      {
+        "role": "user",
+        "content": "그건 여전해요. 3억이 어디 가겠어요. 와이프가 처가에 도움 좀 요청했는데 사이가 더 안 좋아졌어요."
+      },
+      {
+        "role": "assistant",
+        "content": "많이 막막하시겠어요. 지난번에 끝내고 싶다는 말씀을 하셨는데, 요즘도 그런 생각이 드세요?"
+      },
+      {
+        "role": "user",
+        "content": "...예전만큼은 아니에요. 그때는 진짜 매일 그런 생각뿐이었는데, 지금은... 가끔 그래요. 완전히 없어진 건 아닌데, 좀 줄었어요."
+      },
+      {
+        "role": "assistant",
+        "content": "솔직하게 말씀해주셔서 감사해요. 줄어든 것도 의미 있는 변화예요. 계속 함께 나아가겠습니다."
+      },
+      {
+        "role": "user",
+        "content": "네... 감사합니다. 다음에도 올게요."
+      }
+    ],
+    "scale_scores": [
+      {
+        "scale_name": "PHQ-9",
+        "total_score": 19,
+        "severity": "moderately_severe"
+      },
+      {
+        "scale_name": "GAD-7",
+        "total_score": 15,
+        "severity": "severe"
+      }
+    ],
+    "risk_events": [
+      {
+        "type": "suicidal_ideation",
+        "message": "예전만큼은 아니지만 가끔 끝내고 싶은 생각이 든다",
+        "turn_index": "19",
+        "severity": "reduced_from_prior"
+      }
+    ],
+    "ocr_documents": [
+      {
+        "document_type": "진료기록",
+        "source": "OCR scan of prior 진료기록부",
+        "content": "환자명: 오태민 (35세/남)\n진료일: 2026-04-17\n진단: Major Depressive Episode, Severe without psychotic features (F32.2)\n주호소: 사업 실패 후 극심한 우울, 불면, 식욕 저하, 사회적 고립\nPHQ-9: 22 (Severe)\nGAD-7: 18 (Severe)\n처방: Sertraline 50mg QD\n비고: 자살 사고 간접 표현 확인. Safety plan 수립. 2주 후 f/u 예약.\n\n진료일: 2026-05-15\n진단: Major Depressive Episode, Severe (improving)\nPHQ-9: 19 (Moderately Severe)\nGAD-7: 15 (Severe)\n처방: Sertraline 100mg QD (증량)\n비고: 수면 소폭 개선, 식사량 증가. 자살 사고 빈도 감소. 약물 증량 후 경과 관찰."
+      }
+    ],
+    "prior_handoff": "# 사전 문진 보고서 — 오태민 (35세/남)\n\n## 방문 정보\n- **방문일**: 2026-05-15 (2차 방문)\n- **방문 유형**: 재진\n\n## 척도 점수\n| 척도 | 점수 | 중증도 | 이전 | 변화 |\n|------|------|--------|------|------|\n| PHQ-9 | 19 | Moderately Severe | 22 | -3 (개선) |\n| GAD-7 | 15 | Severe | 18 | -3 (개선) |\n\n## 주호소\n사업 실패(식당 폐업) 후 심한 우울 지속. 경제적 부채(3억원)와 가족 갈등. 약물 치료 1개월째.\n\n## 현재 약물\n- 세르트랄린 100mg QD (50mg에서 증량, 이번 방문 시)\n- 부작용: 경미한 소화불량 (증량 후 일시적)\n\n## 수면\n소폭 개선 — 총 수면 3-4시간에서 4-5시간으로 증가. 입면 지연 지속.\n\n## 식사\n소폭 개선 — 하루 1끼에서 1-2끼로 증가. 체중 감소 둔화.\n\n## 기분 및 불안\n무기력감, 절망감 지속되나 빈도 약간 감소. 공황 발작 주 4-5회→주 3-4회.\n\n## 기능 수준\n여전히 심각한 손상. 간헐적 외출 시작 (편의점). 사회적 고립 지속.\n\n## 위험도\n- **위험 수준**: medium\n- 자살 사고 이전 대비 빈도 감소하나 완전 소실 아님\n- 보호 요인 약화 지속 (경제난, 가족 갈등, 사회적 고립)\n\n## 소견\nSevere depressive episode, 약물 치료 반응 초기 징후 있으나 여전히 심각. 세르트랄린 100mg 증량. 자살 사고 모니터링 지속. 2주 후 f/u.",
+    "is_first_visit": false
+  },
+  "expected": {
+    "first_chat": {
+      "missing_slots": ["onset", "duration", "triggers", "sleep", "appetite", "mood", "anxiety", "concentration", "functional_impairment", "medication", "past_psychiatric_history", "risk_factors"],
+      "missing_slot_count": 12,
+      "notes": "Only chief_complaint collected from 3-turn conversation. Incomplete intake — many missing slots."
+    },
+    "longitudinal": {
+      "missing_slots": [],
+      "missing_slot_count": 0,
+      "must_contain_longitudinal_delta": true,
+      "delta_direction": "improved",
+      "delta_details": {
+        "phq9_previous": 19,
+        "phq9_current": 19,
+        "gad7_previous": 15,
+        "gad7_current": 15,
+        "note": "Scores from prior_handoff used for delta. Current visit shows stability with qualitative improvement in sleep, appetite, function."
+      },
+      "has_ocr_evidence": true,
+      "has_prior_handoff": true,
+      "notes": "Full 12-turn conversation, all 13 slots filled, OCR documents and prior handoff present. Delta section must compare with prior visit. More evidence available than first_chat_input."
+    },
+    "comparison_notes": "The longitudinal_input has significantly more evidence: all slots filled vs 1, 12 conversation turns vs 3, OCR documents, prior handoff, and risk event tracking. Test validates that richer inputs produce more complete and clinically useful reports."
+  }
+}

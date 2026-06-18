@@ -1,23 +1,35 @@
 """AI server entry point.
 
-Phase 1a Day 1~2 부트스트랩 — /health 만 노출.
-5개 인터페이스(/ai/chat/respond, /ai/safety/classify, /ai/stt/transcribe,
-/ai/ocr/parse, /ai/handoff/generate)는 각 도메인 라우터로 추가 예정.
+Exposes:
+- GET  /health
+- POST /ai/safety/classify
+- POST /ai/handoff/generate
+- POST /ai/chat/respond
+- (future) /ai/stt/transcribe, /ai/ocr/parse
 """
+
+from __future__ import annotations
+
+import logging
 
 from fastapi import FastAPI
 
 from src import __version__
-from src.api.chat import router as chat_router
-from src.api.safety import router as safety_router
+from src.routes.chat import router as chat_router
+from src.routes.handoff import router as handoff_router
+from src.routes.safety import router as safety_router
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
 
 app = FastAPI(
     title="Neuro-Sync AI Server",
     version=__version__,
-    description="5 HTTP interfaces consumed by Platform API.",
+    description="Multi-agent AI service — Safety, Chat, Handoff (+ STT, OCR planned).",
 )
 
+# ── Mount domain routers ──────────────────────────────────────────────
 app.include_router(safety_router)
+app.include_router(handoff_router)
 app.include_router(chat_router)
 
 

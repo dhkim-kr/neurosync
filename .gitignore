@@ -78,6 +78,16 @@ ocr-output/
 # Turborepo cache
 .turbo/
 
+# Claude Code
+.claude/
+CLAUDE.md
+discussion.md
+error.md
+result.md
+version.md
+
+
+
 # TS incremental build info
 *.tsbuildinfo
 
