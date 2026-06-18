@@ -26,6 +26,25 @@ from tests.simulation.patient_llm import PatientLLM, PatientPersona
 logger = logging.getLogger(__name__)
 
 
+def _extract_natural_response(text: str) -> str:
+    """Extract natural language from a possibly JSON-wrapped response.
+
+    Dialogue LLM sometimes returns raw JSON like:
+      {"assistant_response": "실제 응답 텍스트", "slot_updates": {...}, ...}
+    This function extracts the assistant_response field if the text looks like JSON,
+    otherwise returns it as-is.
+    """
+    stripped = text.strip()
+    if stripped.startswith("{"):
+        try:
+            data = json.loads(stripped)
+            if isinstance(data, dict) and "assistant_response" in data:
+                return data["assistant_response"]
+        except json.JSONDecodeError:
+            pass
+    return text
+
+
 @dataclass
 class TurnRecord:
     """Single turn in the simulation."""
@@ -260,7 +279,7 @@ async def run_simulation(
             result.crisis_turn = turn_num
             logger.warning("!!! CRISIS ACTIVATED at turn %d (CTRS=%d) !!!", turn_num, safety_out.ctrs_level)
         elif dialogue_out:
-            assistant_response = dialogue_out.assistant_response
+            assistant_response = _extract_natural_response(dialogue_out.assistant_response)
             slot_updates = dialogue_out.slot_updates
             filled_slots.update(slot_updates)
 

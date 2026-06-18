@@ -113,7 +113,13 @@ VP_003 = PatientPersona(
 
 
 class PatientLLM:
-    """독립적인 Patient LLM — clinical agent와 별도 세션으로 실행."""
+    """독립적인 Patient LLM — clinical agent와 별도 세션으로 실행.
+
+    Role mapping (Patient LLM 관점):
+    - system: persona prompt (환자 역할 지시)
+    - user: 상담 AI가 한 말 (Patient LLM에게는 "상대방" 입력)
+    - assistant: 환자(=Patient LLM)가 한 말 (Patient LLM 자신의 출력)
+    """
 
     def __init__(
         self,
@@ -127,10 +133,14 @@ class PatientLLM:
         self._model = model
         self._history: list[dict[str, str]] = []
 
-    async def respond(self, assistant_message: str) -> str:
-        """Clinical agent의 응답을 받아 환자 발화를 생성한다."""
-        if assistant_message:
-            self._history.append({"role": "assistant", "content": assistant_message})
+    async def respond(self, counselor_message: str) -> str:
+        """상담 AI의 응답을 받아 환자 발화를 생성한다.
+
+        Args:
+            counselor_message: 상담 AI가 환자에게 한 말 (자연어만, JSON 아님)
+        """
+        # 상담 AI 발화 = Patient LLM 입장에서 "user" (상대방)
+        self._history.append({"role": "user", "content": counselor_message})
 
         messages = [
             {"role": "system", "content": self.persona.system_prompt},
@@ -145,18 +155,16 @@ class PatientLLM:
         )
 
         patient_text = resp.choices[0].message.content or ""
-        self._history.append({"role": "user", "content": patient_text})
+        # 환자 발화 = Patient LLM 입장에서 "assistant" (자신의 출력)
+        self._history.append({"role": "assistant", "content": patient_text})
 
         return patient_text
 
     async def start_conversation(self) -> str:
-        """첫 발화 생성 — AI가 먼저 인사하기 전 환자의 첫 마디."""
-        opening_prompt = (
-            "당신은 정신건강 사전문진 앱을 방금 열었습니다. "
-            "AI 상담사가 '안녕하세요, 오늘 어떤 어려움으로 찾아오셨나요?'라고 물었습니다. "
-            "자연스럽게 첫 대답을 해주세요."
-        )
-        self._history.append({"role": "user", "content": opening_prompt})
+        """첫 발화 생성 — AI가 인사한 후 환자의 첫 마디."""
+        # 상담 AI의 첫 인사를 user로 넣음
+        greeting = "안녕하세요, 오늘 어떤 어려움으로 찾아오셨나요?"
+        self._history.append({"role": "user", "content": greeting})
 
         messages = [
             {"role": "system", "content": self.persona.system_prompt},
@@ -171,8 +179,7 @@ class PatientLLM:
         )
 
         patient_text = resp.choices[0].message.content or ""
-        # Replace the opening prompt with actual patient response
-        self._history[-1] = {"role": "user", "content": patient_text}
+        self._history.append({"role": "assistant", "content": patient_text})
 
         return patient_text
 
