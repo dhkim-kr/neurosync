@@ -1,1 +1,0 @@
-{"assistant_response":"안녕하세요, 박성호님. 힘드실 것 같은데, 지금 어떤 기분인지 말씀해 주시겠어요?","slot_updates":{"chief_complaint":"살고 싶지 않다는 생각, 무가치감, 가족에 짐이 된다는 느낌"},"risk_level":"none","requires_human_review":false,"reason_summary":"초기 신뢰 형성 및 주호소 확인"}

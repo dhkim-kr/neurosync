@@ -12,7 +12,7 @@ from src.adapters.base import ChatMessage, LLMAdapter
 from src.agents.base import AgentInput, BaseAgent
 from src.prompts.loader import PromptLoader
 from src.routing.model_router import ModelRouter
-from src.schemas.common import RiskLevel
+from src.schemas.common import CTRSLevel, RISK_TO_CTRS, RiskLevel
 from src.schemas.safety import SafetyClassification, SafetyInput, SafetyOutput
 
 logger = logging.getLogger(__name__)
@@ -283,6 +283,13 @@ class SafetyClassifierAgent(BaseAgent):
 
         latency_ms = (time.perf_counter() - start) * 1000
 
+        # Map merged risk level to CTRS
+        ctrs = RISK_TO_CTRS.get(merged_level, CTRSLevel.STABLE)
+
+        # CTRS 1-2 = crisis (not just critical)
+        crisis_activated = ctrs <= CTRSLevel.HIGH_RISK
+        needs_review = ctrs <= CTRSLevel.ACUTE  # CTRS 1-3
+
         return SafetyOutput(
             model_used=model_used,
             prompt_version="v1",
@@ -295,6 +302,7 @@ class SafetyClassifierAgent(BaseAgent):
             rule_triggered=rule_level != RiskLevel.none,
             llm_risk_level=llm_classification.risk_level,
             rule_risk_level=rule_level,
-            requires_human_review=_RISK_ORDER[merged_level] >= _RISK_ORDER[RiskLevel.high],
-            crisis_protocol_activated=merged_level == RiskLevel.critical,
+            ctrs_level=ctrs,
+            requires_human_review=needs_review,
+            crisis_protocol_activated=crisis_activated,
         )
