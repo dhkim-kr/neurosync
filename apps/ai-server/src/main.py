@@ -1,0 +1,42 @@
+"""AI server entry point.
+
+Exposes:
+- GET  /health
+- POST /ai/safety/classify
+- POST /ai/handoff/generate
+- POST /ai/chat/respond
+- (future) /ai/stt/transcribe, /ai/ocr/parse
+"""
+
+from __future__ import annotations
+
+import logging
+
+from fastapi import FastAPI
+
+from src import __version__
+from src.routes.chat import router as chat_router
+from src.routes.handoff import router as handoff_router
+from src.routes.safety import router as safety_router
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
+
+app = FastAPI(
+    title="Neuro-Sync AI Server",
+    version=__version__,
+    description="Multi-agent AI service — Safety, Chat, Handoff (+ STT, OCR planned).",
+)
+
+# ── Mount domain routers ──────────────────────────────────────────────
+app.include_router(safety_router)
+app.include_router(handoff_router)
+app.include_router(chat_router)
+
+
+@app.get("/health")
+async def health() -> dict[str, str]:
+    return {
+        "status": "ok",
+        "service": "neuro-sync-ai-server",
+        "version": __version__,
+    }

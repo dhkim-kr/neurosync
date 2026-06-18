@@ -1,0 +1,192 @@
+# Agent → Model Registry
+# Each agent maps to a routing strategy: fixed, benchmarked, or offline.
+#
+# Fixed agents always use exactly one adapter (no fallback).
+# Benchmarked agents have primary → secondary → fallback tiers.
+# Offline agents are not called at runtime.
+
+agents:
+
+  # ── Fixed adapters (non-LLM or single-vendor) ──────────────────────
+
+  stt_agent:
+    strategy: fixed
+    adapter: skt-ak-stt
+    model: "${SKT_A_X_STT_STREAMING_MODEL}"
+    description: "STT via SKT A.X streaming/batch"
+
+  ocr_agent:
+    strategy: fixed
+    adapter: solar-document-parse
+    model: "solar-document-parse"
+    description: "Document OCR via Upstage Document Parse"
+
+  # ── Benchmarked agents (primary / secondary / fallback) ─────────────
+
+  safety_classifier:
+    strategy: benchmarked
+    primary:
+      adapter: solar-pro3
+      model: "solar-pro3"
+      supports_json_schema: true
+      supports_json_object: true
+    secondary:
+      adapter: k-exaone
+      model: "${LG_K_EXAONE_ENDPOINT_ID}"
+      supports_json_schema: false
+      supports_json_object: true
+    fallback:
+      adapter: ak-llm
+      model: "A.X-K1"
+      supports_json_schema: false
+      supports_json_object: false
+
+  dialogue:
+    strategy: benchmarked
+    primary:
+      adapter: solar-pro3
+      model: "solar-pro3"
+      supports_json_schema: true
+      supports_json_object: true
+    secondary:
+      adapter: k-exaone
+      model: "${LG_K_EXAONE_ENDPOINT_ID}"
+      supports_json_schema: false
+      supports_json_object: true
+    fallback:
+      adapter: ak-llm
+      model: "A.X-K1"
+      supports_json_schema: false
+      supports_json_object: false
+
+  clinical_slot:
+    strategy: benchmarked
+    primary:
+      adapter: solar-pro3
+      model: "solar-pro3"
+      supports_json_schema: true
+      supports_json_object: true
+    secondary:
+      adapter: k-exaone
+      model: "${LG_K_EXAONE_ENDPOINT_ID}"
+      supports_json_schema: false
+      supports_json_object: true
+    fallback:
+      adapter: ak-llm
+      model: "A.X-K1"
+      supports_json_schema: false
+      supports_json_object: false
+
+  input_normalizer:
+    strategy: benchmarked
+    primary:
+      adapter: solar-pro3
+      model: "solar-pro3"
+      supports_json_schema: true
+      supports_json_object: true
+    secondary:
+      adapter: k-exaone
+      model: "${LG_K_EXAONE_ENDPOINT_ID}"
+      supports_json_schema: false
+      supports_json_object: true
+    fallback:
+      adapter: ak-llm
+      model: "A.X-K1"
+      supports_json_schema: false
+      supports_json_object: false
+
+  orchestrator:
+    strategy: benchmarked
+    primary:
+      adapter: solar-pro3
+      model: "solar-pro3"
+      supports_json_schema: true
+      supports_json_object: true
+    secondary:
+      adapter: k-exaone
+      model: "${LG_K_EXAONE_ENDPOINT_ID}"
+      supports_json_schema: false
+      supports_json_object: true
+    fallback:
+      adapter: ak-llm
+      model: "A.X-K1"
+      supports_json_schema: false
+      supports_json_object: false
+
+  temporal_retriever:
+    strategy: benchmarked
+    primary:
+      adapter: solar-pro3
+      model: "solar-pro3"
+      supports_json_schema: true
+      supports_json_object: true
+    secondary:
+      adapter: k-exaone
+      model: "${LG_K_EXAONE_ENDPOINT_ID}"
+      supports_json_schema: false
+      supports_json_object: true
+    fallback:
+      adapter: ak-llm
+      model: "A.X-K1"
+      supports_json_schema: false
+      supports_json_object: false
+
+  temporal_summary:
+    strategy: benchmarked
+    primary:
+      adapter: solar-pro3
+      model: "solar-pro3"
+      supports_json_schema: true
+      supports_json_object: true
+    secondary:
+      adapter: k-exaone
+      model: "${LG_K_EXAONE_ENDPOINT_ID}"
+      supports_json_schema: false
+      supports_json_object: true
+    fallback:
+      adapter: ak-llm
+      model: "A.X-K1"
+      supports_json_schema: false
+      supports_json_object: false
+
+  handoff_generator:
+    strategy: benchmarked
+    primary:
+      adapter: solar-pro3
+      model: "solar-pro3"
+      supports_json_schema: true
+      supports_json_object: true
+    secondary:
+      adapter: k-exaone
+      model: "${LG_K_EXAONE_ENDPOINT_ID}"
+      supports_json_schema: false
+      supports_json_object: true
+    fallback:
+      adapter: ak-llm
+      model: "A.X-K1"
+      supports_json_schema: false
+      supports_json_object: false
+
+  evidence_verifier:
+    strategy: benchmarked
+    primary:
+      adapter: solar-pro3
+      model: "solar-pro3"
+      supports_json_schema: true
+      supports_json_object: true
+    secondary:
+      adapter: k-exaone
+      model: "${LG_K_EXAONE_ENDPOINT_ID}"
+      supports_json_schema: false
+      supports_json_object: true
+    fallback:
+      adapter: ak-llm
+      model: "A.X-K1"
+      supports_json_schema: false
+      supports_json_object: false
+
+  # ── Offline (not called at runtime) ─────────────────────────────────
+
+  prompt_eval:
+    strategy: offline
+    description: "Prompt evaluation — batch-only, not used in live inference"

@@ -1,0 +1,41 @@
+"""Abstract base agent with shared input/output schemas."""
+
+from __future__ import annotations
+
+import abc
+from typing import Any, Optional
+
+from pydantic import BaseModel, Field
+
+
+class AgentInput(BaseModel):
+    """Base input shared by every agent."""
+
+    session_id: str = Field(..., description="Session identifier")
+    request_id: Optional[str] = Field(default=None, description="Trace/request ID")
+    extra: dict[str, Any] = Field(default_factory=dict, description="Agent-specific payload")
+
+
+class AgentOutput(BaseModel):
+    """Base output that every agent must return."""
+
+    model_used: str = Field(default="", description="Model identifier actually used")
+    prompt_version: str = Field(default="", description="Prompt template version")
+    latency_ms: float = Field(default=0.0, description="End-to-end agent latency in ms")
+    reason_summary: str = Field(
+        default="",
+        description="One-line policy reason for this output (never raw CoT)",
+    )
+
+
+class BaseAgent(abc.ABC):
+    """Every domain agent inherits from this and implements run()."""
+
+    @property
+    @abc.abstractmethod
+    def agent_name(self) -> str:
+        """Registry key for this agent, e.g. 'safety_classifier'."""
+
+    @abc.abstractmethod
+    async def run(self, inp: AgentInput, **kwargs: Any) -> AgentOutput:
+        """Execute the agent logic and return a typed output."""
