@@ -68,9 +68,9 @@
 | T1-F1-DEV-011 | DEV | SentimentAnalyzerAgent 구현 (Mode A: per-utterance, Mode B: session) | [ ] | - | - |
 | T1-F1-DEV-012 | DEV | SentimentAnalyzer schema 정의 (SentimentInput, UtteranceOutput, SessionOutput) | [ ] | T1-F1-DEV-011 | - |
 | T1-F1-DEV-013 | DEV | SentimentAnalyzer prompt v1 작성 완료 | [x] | - | RPT-005 |
-| T1-F1-VER-001 | VER | VP-001 자율 대화 시뮬레이션 (초진 경증) | [ ] | T1-F1-DEV-006, T1-F0-DOC-003 | - |
-| T1-F1-VER-002 | VER | VP-003 자율 대화 시뮬레이션 (초진 중증, CTRS 2-3 trigger) | [ ] | T1-F1-DEV-006, T1-F0-DOC-003 | - |
-| T1-F1-VER-003 | VER | Safety gate CTRS 1-2 crisis bypass 통합 테스트 | [ ] | T1-F1-DEV-001, T1-F1-DEV-009 | - |
+| T1-F1-VER-001 | VER | VP-001 자율 대화 시뮬레이션 (초진 경증) | [x] | T1-F1-DEV-006, T1-F0-DOC-003 | RPT-006 |
+| T1-F1-VER-002 | VER | VP-003 자율 대화 시뮬레이션 (초진 중증, CTRS 2-3 trigger) | [x] | T1-F1-DEV-006, T1-F0-DOC-003 | RPT-006 |
+| T1-F1-VER-003 | VER | Safety gate CTRS 1-2 crisis bypass 통합 테스트 | [x] | T1-F1-DEV-001, T1-F1-DEV-009 | RPT-006 |
 | T1-F1-VER-004 | VER | STT->InputNormalizer 정규화 정확도 테스트 | [ ] | T1-F1-DEV-002, T1-F1-DEV-003 | - |
 | T1-F1-VER-005 | VER | Slot coverage convergence 테스트 (15턴 이내 0.7 달성) | [ ] | T1-F1-DEV-005 | - |
 | T1-F1-VER-006 | VER | 위기 키워드 recall >= 95% 회귀 테스트 | [ ] | T1-F1-DEV-001, T1-F1-DEV-009 | - |
