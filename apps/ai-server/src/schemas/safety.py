@@ -7,7 +7,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 from src.agents.base import AgentInput, AgentOutput
-from src.schemas.common import RiskLevel
+from src.schemas.common import CTRSLevel, RiskLevel
 
 
 class SafetyInput(AgentInput):
@@ -63,8 +63,14 @@ class SafetyOutput(AgentOutput):
         default=None,
         description="Risk level from rule engine alone (before merge)",
     )
+    ctrs_level: int = Field(
+        default=CTRSLevel.STABLE,
+        ge=1,
+        le=5,
+        description="CTRS level: 1=emergency, 5=stable",
+    )
     requires_human_review: bool = Field(default=False)
     crisis_protocol_activated: bool = Field(
         default=False,
-        description="True if immediate crisis intervention is needed",
+        description="True if CTRS 1-2 — immediate crisis intervention needed",
     )

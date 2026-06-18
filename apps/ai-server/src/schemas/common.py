@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from enum import StrEnum
+from enum import IntEnum, StrEnum
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -16,6 +16,30 @@ class RiskLevel(StrEnum):
     medium = "medium"
     high = "high"
     critical = "critical"
+
+
+class CTRSLevel(IntEnum):
+    """Crisis Triage Rating Scale — 1 = most urgent, 5 = stable.
+
+    Based on: 국립정신건강센터, 정신과적 응급상황에서의 현장대응안내 2.0
+    """
+
+    EMERGENCY = 1       # 초응급: 자살시도, 자해 행동, 타해, 약물 과다복용
+    HIGH_RISK = 2       # 고위험: 구체적 자살 계획, 수단 보유, 강한 충동
+    ACUTE = 3           # 급성기: 급성 환각/망상, 공황, 심한 우울 악화
+    MODERATE = 4        # 중증/주의: 지속적 우울·불안, 기능 손상
+    STABLE = 5          # 안정기: 위험 없음, 보호 요인 존재
+
+
+CTRS_TO_RISK: dict[CTRSLevel, RiskLevel] = {
+    CTRSLevel.EMERGENCY: RiskLevel.critical,
+    CTRSLevel.HIGH_RISK: RiskLevel.high,
+    CTRSLevel.ACUTE: RiskLevel.medium,
+    CTRSLevel.MODERATE: RiskLevel.low,
+    CTRSLevel.STABLE: RiskLevel.none,
+}
+
+RISK_TO_CTRS: dict[RiskLevel, CTRSLevel] = {v: k for k, v in CTRS_TO_RISK.items()}
 
 
 class EvidenceSource(StrEnum):
