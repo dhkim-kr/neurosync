@@ -17,11 +17,14 @@ from typing import Any
 
 from src.agents.safety_classifier import SafetyClassifierAgent
 from src.dependencies import get_model_router, get_prompt_loader
+from src.agents.clinical_slot import ClinicalSlotAgent, ClinicalSlotInput, ClinicalSlotOutput
 from src.schemas.common import RiskLevel
 from src.schemas.dialogue import DialogueInput, DialogueOutput
 from src.schemas.safety import SafetyInput, SafetyOutput
 
 from tests.simulation.patient_llm import PatientLLM, PatientPersona
+
+ESSENTIAL_SLOTS = ["chief_complaint", "duration", "functional_impairment", "onset", "risk_factors"]
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +81,8 @@ class SimulationResult:
     total_latency_ms: float = 0.0
     started_at: str = ""
     ended_at: str = ""
+    clinical_slot_result: dict[str, Any] | None = None
+    clinical_slot_coverage: float = 0.0
     errors: list[str] = field(default_factory=list)
 
     @property
@@ -102,6 +107,8 @@ class SimulationResult:
             "total_latency_ms": round(self.total_latency_ms, 1),
             "started_at": self.started_at,
             "ended_at": self.ended_at,
+            "clinical_slot_result": self.clinical_slot_result,
+            "clinical_slot_coverage": self.clinical_slot_coverage,
             "errors": self.errors,
             "turns": [
                 {
@@ -161,6 +168,7 @@ async def _call_clinical_pipeline(
 
     # Run dialogue (reuse the chat route logic inline)
     from src.adapters.base import ChatMessage, LLMAdapter
+    from src.schemas.dialogue import DialogueLLMResponse
     import json as _json
 
     try:
@@ -171,10 +179,19 @@ async def _call_clinical_pipeline(
             "JSON으로 응답: {assistant_response, slot_updates, risk_level, requires_human_review, reason_summary}"
         )
 
+    # Build slot context — show filled AND missing to guide questions
     slot_ctx = ""
-    if filled_slots:
-        filled = ", ".join(f"{k}={v}" for k, v in filled_slots.items())
-        slot_ctx = f"\n\n[이미 수집된 슬롯: {filled}]"
+    filled_list = [k for k, v in filled_slots.items() if v]
+    all_essential = ["chief_complaint", "onset", "duration", "functional_impairment", "risk_factors"]
+    missing_essential = [s for s in all_essential if s not in filled_list]
+
+    parts = []
+    if filled_list:
+        parts.append(f"이미 수집된 슬롯: {', '.join(filled_list)}")
+    if missing_essential:
+        parts.append(f"아직 미수집된 필수 슬롯: {', '.join(missing_essential)}. 이 중 하나를 자연스럽게 물어보세요.")
+    if parts:
+        slot_ctx = "\n\n[" + " | ".join(parts) + "]"
 
     messages = [ChatMessage(role="system", content=system_prompt + slot_ctx)]
     for turn in conversation_history[-8:]:
@@ -194,7 +211,6 @@ async def _call_clinical_pipeline(
 
     try:
         data = _json.loads(resp.content)
-        from src.schemas.dialogue import DialogueLLMResponse
         llm_resp = DialogueLLMResponse.model_validate(data)
     except Exception:
         llm_resp = DialogueLLMResponse(
@@ -323,6 +339,43 @@ async def run_simulation(
         except Exception as e:
             result.errors.append(f"Turn {turn_num} patient LLM error: {e}")
             break
+
+    # ── Post-dialogue: ClinicalSlotAgent extraction ────────────────
+    if conversation_history and not result.crisis_triggered:
+        logger.info("Running ClinicalSlotAgent on full conversation...")
+        try:
+            slot_agent = ClinicalSlotAgent(
+                model_router=get_model_router(),
+                prompt_loader=get_prompt_loader(),
+            )
+            slot_input = ClinicalSlotInput(
+                session_id=session_id,
+                conversation_history=conversation_history,
+                current_slots=filled_slots,
+            )
+            slot_result: ClinicalSlotOutput = await slot_agent.run(slot_input)
+            result.clinical_slot_result = {
+                "filled_slots": slot_result.filled_slots,
+                "missing_slots": slot_result.missing_slots,
+                "essential_filled": slot_result.essential_filled,
+                "essential_missing": slot_result.essential_missing,
+                "slot_coverage": slot_result.slot_coverage,
+                "safety_flag": slot_result.safety_flag,
+                "extracted_slots": slot_result.extracted_slots,
+            }
+            # Update final slots with ClinicalSlot extraction
+            result.final_slots = filled_slots  # dialogue-extracted
+            result.clinical_slot_coverage = slot_result.slot_coverage
+            logger.info(
+                "ClinicalSlot: coverage=%.0f%% filled=%d missing=%d safety=%s",
+                slot_result.slot_coverage * 100,
+                len(slot_result.filled_slots),
+                len(slot_result.missing_slots),
+                slot_result.safety_flag,
+            )
+        except Exception as e:
+            result.errors.append(f"ClinicalSlot extraction error: {e}")
+            logger.error("ClinicalSlot failed: %s", e)
 
     result.final_slots = filled_slots
     result.ended_at = datetime.now().isoformat()

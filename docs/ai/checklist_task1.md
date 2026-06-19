@@ -59,7 +59,7 @@
 | T1-F1-DEV-002 | DEV | InputNormalizerAgent 구현 | [ ] | - | - |
 | T1-F1-DEV-003 | DEV | STT Agent + SKT A.X adapter 구현 | [ ] | - | - |
 | T1-F1-DEV-004 | DEV | OCR Agent + Upstage Document Parse adapter 구현 | [ ] | - | - |
-| T1-F1-DEV-005 | DEV | DialogueAgent slot coverage tracking 구현 | [ ] | T1-F0-DEV-001 | - |
+| T1-F1-DEV-005 | DEV | DialogueAgent slot coverage tracking 구현 | [x] | T1-F0-DEV-001 | RPT-007 |
 | T1-F1-DEV-006 | DEV | POST /ai/chat/respond 라우트 Orchestrator 연동 리팩토링 | [ ] | T1-F0-DEV-001 | - |
 | T1-F1-DEV-007 | DEV | POST /ai/stt/transcribe 라우트 신규 구현 | [ ] | T1-F1-DEV-003 | - |
 | T1-F1-DEV-008 | DEV | POST /ai/ocr/parse 라우트 신규 구현 | [ ] | T1-F1-DEV-004 | - |
@@ -99,7 +99,7 @@
 
 | ID | Type | 항목 | 상태 | 선행 조건 | Report 참조 |
 |---|---|---|---|---|---|
-| T1-F3-DEV-001 | DEV | ClinicalSlotAgent 구현 | [ ] | - | - |
+| T1-F3-DEV-001 | DEV | ClinicalSlotAgent 구현 | [x] | - | RPT-007 |
 | T1-F3-DEV-002 | DEV | POST /ai/slots/extract 라우트 신규 구현 | [ ] | T1-F3-DEV-001 | - |
 | T1-F3-DEV-003 | DEV | Rule-based scoring engine (PHQ-9, GAD-7, PHQ-4, WHO-5, AUDIT-C) | [x] | - | RPT-003 |
 | T1-F3-DEV-004 | DEV | POST /ai/survey/score 라우트 신규 구현 (rule-based, no LLM) | [ ] | T1-F3-DEV-003 | - |
