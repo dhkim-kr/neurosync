@@ -409,3 +409,38 @@ Risk: low  med  high
 | 3 | VP-001 safety_flag=True (ClinicalSlot) | Minor | ClinicalSlot이 "불안" 관련 표현을 risk_factors로 잡음 — 경증에서는 false가 바람직 | prompt 조정 |
 
 ---
+
+### RPT-008 [2026-06-24] Checklist/code audit — 5 issues found and fixed | DONE
+
+**Summary:** PRD_task1, checklist_task1, 구현 코드 간 정합성 검증 수행. 5건 이슈 발견 및 수정.
+
+**Issue 1 (Critical): 체크리스트 의존성 위반**
+- 문제: T1-F1-VER-001/002는 T1-F1-DEV-006(Orchestrator route refactor)에 의존하지만, DEV-006은 미완. T1-F1-VER-003은 T1-F1-DEV-009(safety prompt 고도화)에 의존하지만 미완. T1-F1-DEV-005는 T1-F0-DEV-001(Orchestrator)에 의존하지만 미완.
+- 원인: 시뮬레이션은 기존 inline `routes/chat.py` 파이프라인으로 실행되어 Orchestrator 없이도 Safety+Dialogue 검증이 가능했음. 체크리스트 의존성이 과도하게 설정됨.
+- 수정: VER-001/002의 의존성에서 T1-F1-DEV-006 제거 (pre-Orchestrator 검증으로 유효). VER-003의 의존성에서 T1-F1-DEV-009 제거. DEV-005의 의존성에서 T1-F0-DEV-001 제거 (runner에서 직접 slot 주입으로 구현).
+
+**Issue 2 (Minor): ClinicalSlot 스키마 위치 위반**
+- 문제: `ClinicalSlotInput`/`ClinicalSlotOutput`이 `agents/clinical_slot.py`에 inline 정의됨 — 프로젝트 규칙은 `schemas/` 디렉토리에 분리.
+- 수정: `schemas/clinical_slot.py` 신규 생성. `agents/clinical_slot.py`에서 inline 클래스 제거 → `schemas/` import로 교체. `runner.py` import 경로도 수정.
+- 검증: `python -c "from src.schemas.clinical_slot import ..."` 성공. 40/40 tests pass.
+
+**Issue 3 (Minor): T1-F0-DEV-003 미반영**
+- 문제: `agent_model_registry.yaml`에 13개 agent 모두 등록 완료됐으나 체크리스트에 `[ ]`로 남아있음.
+- 수정: `[x]`로 업데이트, RPT-008 참조.
+
+**Issue 4 (Minor): T1-F0-DEV-004 미반영**
+- 문제: PromptLoader 정상 작동 확인됨 (13개 prompt 디렉토리 존재, 시뮬레이션에서 검증). 체크리스트에 `[ ]`로 남아있음.
+- 수정: `[x]`로 업데이트, RPT-008 참조.
+
+**Issue 5 (Process): version.md v0.0 이후 미갱신**
+- 문제: RPT-001~007까지 7건의 구현/검증 완료. ClinicalSlotAgent, CTRSLevel, Survey Scoring 등 주요 기능 구현됐으나 version.md가 v0.0에서 정체.
+- 수정: v0.1 범프 (기능 1-1 Safety+Dialogue 단독 동작 확인 마일스톤)
+
+**변경 파일:**
+- `docs/ai/checklist_task1.md` — 의존성 수정 4건, 상태 업데이트 2건
+- `apps/ai-server/src/schemas/clinical_slot.py` — 신규 (스키마 분리)
+- `apps/ai-server/src/agents/clinical_slot.py` — inline 스키마 제거, import 교체
+- `apps/ai-server/tests/simulation/runner.py` — import 경로 수정
+- `docs/ai/version.md` — v0.1 범프
+
+---

@@ -12,9 +12,10 @@ import time
 from typing import Any, Optional
 
 from src.adapters.base import ChatMessage, LLMAdapter
-from src.agents.base import AgentInput, AgentOutput, BaseAgent
+from src.agents.base import AgentInput, BaseAgent
 from src.prompts.loader import PromptLoader
 from src.routing.model_router import ModelRouter
+from src.schemas.clinical_slot import ClinicalSlotInput, ClinicalSlotOutput
 
 logger = logging.getLogger(__name__)
 
@@ -42,26 +43,6 @@ ESSENTIAL_SLOT_KEYS = [
     "symptoms.sleep",
     "symptoms.mood",
 ]
-
-
-class ClinicalSlotInput(AgentInput):
-    """Input to the clinical slot extractor."""
-
-    conversation_history: list[dict[str, str]]
-    current_slots: dict[str, Any] = {}
-
-
-class ClinicalSlotOutput(AgentOutput):
-    """Output from the clinical slot extractor."""
-
-    extracted_slots: dict[str, Any] = {}
-    filled_slots: list[str] = []
-    missing_slots: list[str] = []
-    essential_filled: list[str] = []
-    essential_missing: list[str] = []
-    slot_coverage: float = 0.0
-    safety_flag: bool = False
-    safety_flag_reason: Optional[str] = None
 
 
 class ClinicalSlotAgent(BaseAgent):

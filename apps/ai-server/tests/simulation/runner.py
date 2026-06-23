@@ -17,7 +17,8 @@ from typing import Any
 
 from src.agents.safety_classifier import SafetyClassifierAgent
 from src.dependencies import get_model_router, get_prompt_loader
-from src.agents.clinical_slot import ClinicalSlotAgent, ClinicalSlotInput, ClinicalSlotOutput
+from src.agents.clinical_slot import ClinicalSlotAgent
+from src.schemas.clinical_slot import ClinicalSlotInput, ClinicalSlotOutput
 from src.schemas.common import RiskLevel
 from src.schemas.dialogue import DialogueInput, DialogueOutput
 from src.schemas.safety import SafetyInput, SafetyOutput

@@ -38,8 +38,8 @@
 |---|---|---|---|---|---|
 | T1-F0-DEV-001 | DEV | Orchestrator state machine 구현 (ReceiveInput->SafetyGate->ContextRetrieval->Dialogue->SlotExtraction->HandoffReady) | [ ] | - | - |
 | T1-F0-DEV-002 | DEV | CTRS <-> RiskLevel 매핑 enum 구현 | [x] | - | RPT-001 |
-| T1-F0-DEV-003 | DEV | agent_model_registry.yaml 전체 agent 등록 확인 | [ ] | - | - |
-| T1-F0-DEV-004 | DEV | PromptLoader 경로 설정 및 검증 | [ ] | - | - |
+| T1-F0-DEV-003 | DEV | agent_model_registry.yaml 전체 agent 등록 확인 | [x] | - | RPT-008 |
+| T1-F0-DEV-004 | DEV | PromptLoader 경로 설정 및 검증 | [x] | - | RPT-008 |
 | T1-F0-CFG-001 | CFG | Docker Compose AI server 개발 환경 확인 | [ ] | - | - |
 | T1-F0-CFG-002 | CFG | shared-contracts 패키지 동기화 | [ ] | - | - |
 | T1-F0-DOC-001 | DOC | PRD_task1_development.md 작성 | [x] | - | - |
@@ -59,7 +59,7 @@
 | T1-F1-DEV-002 | DEV | InputNormalizerAgent 구현 | [ ] | - | - |
 | T1-F1-DEV-003 | DEV | STT Agent + SKT A.X adapter 구현 | [ ] | - | - |
 | T1-F1-DEV-004 | DEV | OCR Agent + Upstage Document Parse adapter 구현 | [ ] | - | - |
-| T1-F1-DEV-005 | DEV | DialogueAgent slot coverage tracking 구현 | [x] | T1-F0-DEV-001 | RPT-007 |
+| T1-F1-DEV-005 | DEV | DialogueAgent slot coverage tracking 구현 | [x] | - | RPT-007 |
 | T1-F1-DEV-006 | DEV | POST /ai/chat/respond 라우트 Orchestrator 연동 리팩토링 | [ ] | T1-F0-DEV-001 | - |
 | T1-F1-DEV-007 | DEV | POST /ai/stt/transcribe 라우트 신규 구현 | [ ] | T1-F1-DEV-003 | - |
 | T1-F1-DEV-008 | DEV | POST /ai/ocr/parse 라우트 신규 구현 | [ ] | T1-F1-DEV-004 | - |
@@ -68,9 +68,9 @@
 | T1-F1-DEV-011 | DEV | SentimentAnalyzerAgent 구현 (Mode A: per-utterance, Mode B: session) | [ ] | - | - |
 | T1-F1-DEV-012 | DEV | SentimentAnalyzer schema 정의 (SentimentInput, UtteranceOutput, SessionOutput) | [ ] | T1-F1-DEV-011 | - |
 | T1-F1-DEV-013 | DEV | SentimentAnalyzer prompt v1 작성 완료 | [x] | - | RPT-005 |
-| T1-F1-VER-001 | VER | VP-001 자율 대화 시뮬레이션 (초진 경증) | [x] | T1-F1-DEV-006, T1-F0-DOC-003 | RPT-006 |
-| T1-F1-VER-002 | VER | VP-003 자율 대화 시뮬레이션 (초진 중증, CTRS 2-3 trigger) | [x] | T1-F1-DEV-006, T1-F0-DOC-003 | RPT-006 |
-| T1-F1-VER-003 | VER | Safety gate CTRS 1-2 crisis bypass 통합 테스트 | [x] | T1-F1-DEV-001, T1-F1-DEV-009 | RPT-006 |
+| T1-F1-VER-001 | VER | VP-001 자율 대화 시뮬레이션 (초진 경증) | [x] | T1-F0-DOC-003 | RPT-006,007 |
+| T1-F1-VER-002 | VER | VP-003 자율 대화 시뮬레이션 (초진 중증, CTRS 2-3 trigger) | [x] | T1-F0-DOC-003 | RPT-006,007 |
+| T1-F1-VER-003 | VER | Safety gate CTRS 1-2 crisis bypass 통합 테스트 | [x] | T1-F1-DEV-001 | RPT-006,007 |
 | T1-F1-VER-004 | VER | STT->InputNormalizer 정규화 정확도 테스트 | [ ] | T1-F1-DEV-002, T1-F1-DEV-003 | - |
 | T1-F1-VER-005 | VER | Slot coverage convergence 테스트 (15턴 이내 0.7 달성) | [ ] | T1-F1-DEV-005 | - |
 | T1-F1-VER-006 | VER | 위기 키워드 recall >= 95% 회귀 테스트 | [ ] | T1-F1-DEV-001, T1-F1-DEV-009 | - |
