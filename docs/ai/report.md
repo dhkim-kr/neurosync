@@ -444,3 +444,45 @@ Risk: low  med  high
 - `docs/ai/version.md` — v0.1 범프
 
 ---
+
+### RPT-009 [2026-06-24] Sprint 2: Prompts + Routes + Handoff Enhancement | DONE
+
+**Summary:** 7 DEV + 1 VER 완료. Safety/Dialogue prompt 고도화, 2 신규 API route, EvidenceVerifier 3 신규 검증 규칙.
+
+**Phase 1 — Prompt Fixes (T1-F1-DEV-009, DEV-010):**
+- safety_classifier prompt: 맥락 의존 판정 규칙 추가 — 일반 스트레스(가슴 답답, 불안) + 위험 요인 부재 시 CTRS 4-5 판정. 위험 부인 표현 처리 규칙 추가. 간접 표현 테이블 하한은 유지.
+- dialogue prompt: 반복 방지 규칙 5개 추가 + 질문 다양성 가이드 (8턴 순환 예시). chat.py slot_context 수정 — filled + missing essential slots 모두 주입.
+
+**Phase 2 — New Routes (T1-F3-DEV-002, DEV-004):**
+- `POST /ai/slots/extract` — ClinicalSlotAgent 래핑, safety.py 패턴 준수
+- `POST /ai/survey/score` — rule-based, LLM 없음, ScoreResult→SurveyScoreOutput 변환
+- `src/schemas/survey.py` 신규 (SurveyScoreInput/Output)
+- main.py에 2개 라우터 등록 → 총 5/9 endpoints 완성
+- 7 route tests 추가 (PHQ-9, GAD-7, AUDIT-C, edge cases)
+
+**Phase 3 — Handoff Enhancement (T1-F5-DEV-001, DEV-002, DEV-003):**
+- handoff_generator prompt: 12개 필수 H2 제목 목록 명시, 자체 점검 instruction 추가
+- evidence_verifier.py 3 신규 검증:
+  - `_check_section_completeness()`: 8 필수 + 4 조건부 섹션 검증
+  - `_check_ctrs_action_alignment()`: CTRS 1→119/112, CTRS 2→109, CTRS 3→정신건강의학과
+  - `_check_dangling_references()`: 본문 인용↔레지스트리 교차 검증
+- EvidenceVerifierInput에 is_first_visit, has_scale_scores, has_ocr_documents, ctrs_level 필드 추가
+- 9 handoff section tests 추가 (완전성, CTRS alignment, dangling refs)
+
+**Test Results:** 56/56 passed (40 scoring + 7 survey route + 9 handoff sections + 1 health)
+
+**API Endpoints (현재 5/9):**
+
+| Endpoint | Status |
+|---|---|
+| POST /ai/chat/respond | existing |
+| POST /ai/safety/classify | existing |
+| POST /ai/handoff/generate | existing (enhanced) |
+| POST /ai/slots/extract | **NEW** |
+| POST /ai/survey/score | **NEW** |
+| POST /ai/stt/transcribe | planned |
+| POST /ai/ocr/parse | planned |
+| POST /ai/temporal/retrieve | planned |
+| POST /ai/temporal/summarize | planned |
+
+---

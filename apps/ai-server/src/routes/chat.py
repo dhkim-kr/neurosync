@@ -114,11 +114,20 @@ async def respond(
             "JSON으로 응답하세요: {assistant_response, slot_updates, risk_level, requires_human_review, reason_summary}"
         )
 
-    # Build context about filled slots
-    slot_context = ""
-    if body.filled_slots:
-        filled = ", ".join(f"{k}={v}" for k, v in body.filled_slots.items())
-        slot_context = f"\n\n[이미 수집된 슬롯: {filled}]"
+    # Build context about filled AND missing slots
+    _ESSENTIAL_SLOTS = ["chief_complaint", "onset", "duration", "functional_impairment", "risk_factors"]
+    filled_list = [k for k, v in body.filled_slots.items() if v]
+    missing_essential = [s for s in _ESSENTIAL_SLOTS if s not in filled_list]
+
+    parts = []
+    if filled_list:
+        parts.append(f"이미 수집된 슬롯: {', '.join(filled_list)}")
+    if missing_essential:
+        parts.append(
+            f"아직 미수집된 필수 슬롯: {', '.join(missing_essential)}. "
+            "이 중 하나를 자연스럽게 물어보세요. 이미 수집된 슬롯은 다시 묻지 마세요."
+        )
+    slot_context = f"\n\n[{' | '.join(parts)}]" if parts else ""
 
     messages: list[ChatMessage] = [
         ChatMessage(role="system", content=system_prompt + slot_context),
