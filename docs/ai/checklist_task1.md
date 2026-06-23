@@ -73,7 +73,7 @@
 | T1-F1-VER-003 | VER | Safety gate CTRS 1-2 crisis bypass 통합 테스트 | [x] | T1-F1-DEV-001 | RPT-006,007 |
 | T1-F1-VER-004 | VER | STT->InputNormalizer 정규화 정확도 테스트 | [ ] | T1-F1-DEV-002, T1-F1-DEV-003 | - |
 | T1-F1-VER-005 | VER | Slot coverage convergence 테스트 (15턴 이내 0.7 달성) | [ ] | T1-F1-DEV-005 | - |
-| T1-F1-VER-006 | VER | 위기 키워드 recall >= 95% 회귀 테스트 | [ ] | T1-F1-DEV-001, T1-F1-DEV-009 | - |
+| T1-F1-VER-006 | VER | 위기 키워드 recall >= 95% 회귀 테스트 | [x] | T1-F1-DEV-001, T1-F1-DEV-009 | RPT-010 |
 | T1-F1-VER-007 | VER | SentimentAnalyzer per-utterance 정확도 테스트 (경증/중증 발화 20건) | [ ] | T1-F1-DEV-011 | - |
 | T1-F1-VER-008 | VER | SentimentAnalyzer session-level report 정합성 테스트 | [ ] | T1-F1-DEV-011 | - |
 

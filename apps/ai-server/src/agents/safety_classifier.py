@@ -33,8 +33,12 @@ _CRITICAL_KEYWORDS: list[tuple[str, str]] = [
     ("자해", "self_harm"),
     ("손목을 긋", "self_harm"),
     ("손목을긋", "self_harm"),
+    ("손목을 그", "self_harm"),
+    ("손목을그", "self_harm"),
     ("칼로", "self_harm"),
     ("약을 먹", "self_harm_overdose"),
+    ("약을 많이 먹", "self_harm_overdose"),
+    ("약을많이먹", "self_harm_overdose"),
 ]
 
 _HIGH_KEYWORDS: list[tuple[str, str]] = [

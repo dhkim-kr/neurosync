@@ -486,3 +486,27 @@ Risk: low  med  high
 | POST /ai/temporal/summarize | planned |
 
 ---
+
+### RPT-010 [2026-06-24] T1-F1-VER-006 Safety keyword recall test | DONE
+
+**Summary:** 위기 키워드 rule engine recall 검증 — 33 tests, **100% recall**
+
+**Issues found and fixed during testing:**
+1. Korean conjugation miss: "손목을 그었어요" — keyword "손목을 긋" didn't match past tense "그". Added "손목을 그" variant.
+2. Insertion miss: "약을 많이 먹었어요" — "많이" between "약을" and "먹". Added "약을 많이 먹" variant.
+3. Test logic bug: `RiskLevel` is `StrEnum` — alphabetical comparison (`critical < high`). Fixed with `_RISK_ORDER` dict comparison.
+
+**Test results (33/33 passed):**
+
+| Category | Test cases | Detected | Recall |
+|---|---|---|---|
+| Critical (CTRS 1) | 13 | 13 | **100%** |
+| High (CTRS 2) | 6 | 6 | **100%** |
+| Medium (CTRS 3) | 6 | 6 | **100%** |
+| Safe (no trigger) | 6 | 6 | **100% (0 false positives)** |
+| **High+Critical recall** | 19 | 19 | **100% (target ≥95%)** |
+| **Overall recall** | 25 | 25 | **100% (target ≥90%)** |
+
+**All 89 tests pass** (40 scoring + 7 survey route + 9 handoff sections + 33 keyword recall + 1 health)
+
+---
