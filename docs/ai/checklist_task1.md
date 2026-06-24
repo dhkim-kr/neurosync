@@ -72,7 +72,7 @@
 | T1-F1-VER-002 | VER | VP-003 자율 대화 시뮬레이션 (초진 중증, CTRS 2-3 trigger) | [x] | T1-F0-DOC-003 | RPT-006,007 |
 | T1-F1-VER-003 | VER | Safety gate CTRS 1-2 crisis bypass 통합 테스트 | [x] | T1-F1-DEV-001 | RPT-006,007 |
 | T1-F1-VER-004 | VER | STT->InputNormalizer 정규화 정확도 테스트 | [ ] | T1-F1-DEV-002, T1-F1-DEV-003 | - |
-| T1-F1-VER-005 | VER | Slot coverage convergence 테스트 (15턴 이내 0.7 달성) | [ ] | T1-F1-DEV-005 | - |
+| T1-F1-VER-005 | VER | Slot coverage convergence 테스트 (15턴 이내 0.7 달성) | [!] | T1-F1-DEV-005 | RPT-013: Patient LLM echo 미해결 |
 | T1-F1-VER-006 | VER | 위기 키워드 recall >= 95% 회귀 테스트 | [x] | T1-F1-DEV-001, T1-F1-DEV-009 | RPT-010 |
 | T1-F1-VER-007 | VER | SentimentAnalyzer per-utterance 정확도 테스트 (경증/중증 발화 20건) | [ ] | T1-F1-DEV-011 | - |
 | T1-F1-VER-008 | VER | SentimentAnalyzer session-level report 정합성 테스트 | [ ] | T1-F1-DEV-011 | - |
@@ -115,13 +115,13 @@
 
 | ID | Type | 항목 | 상태 | 선행 조건 | Report 참조 |
 |---|---|---|---|---|---|
-| T1-F4-DEV-001 | DEV | TemporalSummaryAgent 구현 | [ ] | - | - |
-| T1-F4-DEV-002 | DEV | POST /ai/temporal/summarize 라우트 신규 구현 | [ ] | T1-F4-DEV-001 | - |
-| T1-F4-DEV-003 | DEV | Direction classification 로직 (improved/worsened/unchanged/unknown) | [ ] | T1-F4-DEV-001 | - |
-| T1-F4-DEV-004 | DEV | Plot-ready time-series data 생성 모듈 | [ ] | T1-F4-DEV-003 | - |
+| T1-F4-DEV-001 | DEV | TemporalSummaryAgent 구현 | [x] | - | RPT-014 |
+| T1-F4-DEV-002 | DEV | POST /ai/temporal/summarize 라우트 신규 구현 | [x] | T1-F4-DEV-001 | RPT-014 |
+| T1-F4-DEV-003 | DEV | Direction classification 로직 (improved/worsened/unchanged/unknown) | [x] | T1-F4-DEV-001 | RPT-014 |
+| T1-F4-DEV-004 | DEV | Plot-ready time-series data 생성 모듈 | [x] | T1-F4-DEV-003 | RPT-014 |
 | T1-F4-VER-001 | VER | VP-002 종단 비교 테스트 (경증 호전) | [ ] | T1-F4-DEV-002, T1-F0-DOC-003 | - |
 | T1-F4-VER-002 | VER | VP-004 종단 비교 테스트 (중증 악화, 새 증상 감지) | [ ] | T1-F4-DEV-002, T1-F0-DOC-003 | - |
-| T1-F4-VER-003 | VER | VP-001/VP-003 초진 시 전체 "unknown" 반환 테스트 | [ ] | T1-F4-DEV-002 | - |
+| T1-F4-VER-003 | VER | VP-001/VP-003 초진 시 전체 "unknown" 반환 테스트 | [x] | T1-F4-DEV-002 | RPT-014 |
 | T1-F4-VER-004 | VER | 모순 감지 테스트 (이전 "호전" vs 현재 "악화") | [ ] | T1-F4-DEV-003 | - |
 
 ---

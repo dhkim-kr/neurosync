@@ -725,3 +725,64 @@ Turn 3 [CTRS 1]: "지금도... 죽고 싶다는 생각이 들어요." → 🚨 C
 | 7 | Checklist dependency overstatement | RPT-008 | RPT-008 | VER items had stricter deps than needed |
 
 ---
+
+### RPT-013 [2026-06-24] Sprint 4 Phase 1: VP-001/VP-003 re-simulation | DONE
+
+**Summary:** Sprint 2 prompt 수정 후 VP-001/VP-003 재시뮬레이션 결과
+
+**ISS-008 (VP-001 CTRS overfitting) — CLOSED:**
+- Before (Run 5): CTRS 3 빈발 (10턴 중 6턴 medium)
+- After (Run 7): CTRS 4(turn 1-3) → **CTRS 5(turn 4-10)** — medium 완전 제거
+- Safety prompt context-dependent rules 정상 작동
+
+**ISS-009 (dialogue repetition) — STILL OPEN:**
+- Patient LLM이 dialogue AI의 응답을 에코하는 패턴 지속
+- 이것은 **clinical agent의 문제가 아닌 simulation framework의 문제**
+- Clinical dialogue prompt의 질문 다양성 자체는 개선됨 (다른 질문 패턴 생성)
+- Patient LLM이 대화가 아닌 요약을 반복하는 행동은 별도 ISS로 관리 필요
+
+**VP-003 결과:** Turn 3 "죽고 싶다" → CTRS 1 → crisis 즉시 발동 — PASS (일관성 유지)
+
+---
+
+### RPT-014 [2026-06-24] Sprint 4: Sentiment route + VP personas + TemporalSummary | DONE
+
+**Summary:** Sprint 4 Phase 2-3 전체 구현 결과
+
+**Phase 2A — SentimentAnalyzer route:**
+- `src/routes/sentiment.py`: POST /ai/sentiment/utterance (Mode A, LLM) + POST /ai/sentiment/session (Mode B, aggregation)
+- `main.py`에 등록 → 8 AI endpoints
+- `tests/test_sentiment_route.py`: 2 tests (empty session, populated session)
+
+**Phase 2B — VP-002/VP-004 personas:**
+- `patient_llm.py`에 VP_002 (이준호 35M, 재진 경증, Escitalopram 10mg) + VP_004 (최하은 31F, 재진 중증, 공황 발작, 약물 3차 변경) 추가
+- 총 4 persona: VP-001~VP-004 모두 simulation-ready
+
+**Phase 3 — TemporalSummaryAgent (F4-DEV-001~004):**
+- `src/schemas/temporal.py`: DomainDirection, DomainTrend, SentimentTrend, PlotPoint, TemporalSummaryInput/Output
+- `src/agents/temporal_summary.py`: 순수 rule-based agent (LLM 호출 없음)
+  - PHQ-9/GAD-7: delta ≥5 threshold
+  - CTRS: inverted scale (lower=worse)
+  - Sentiment: polarity delta >0.3
+  - First visit: all "unknown"
+  - Overall: worsened-takes-priority voting
+- `src/routes/temporal.py`: POST /ai/temporal/summarize → 9 AI endpoints
+- `tests/test_temporal_direction.py`: 12 tests (first visit, PHQ-9 boundary, CTRS inversion, overall priority, plot data)
+
+**Test results:** 102/102 passed (89 existing + 2 sentiment + 12 temporal - 1 health = 102)
+
+**API Endpoints: 9/10 (90%) — only /ai/stt/transcribe remaining**
+
+| Endpoint | Status |
+|---|---|
+| /ai/chat/respond | existing |
+| /ai/safety/classify | existing |
+| /ai/handoff/generate | existing |
+| /ai/slots/extract | Sprint 2 |
+| /ai/survey/score | Sprint 2 |
+| /ai/sentiment/utterance | **Sprint 4 NEW** |
+| /ai/sentiment/session | **Sprint 4 NEW** |
+| /ai/temporal/summarize | **Sprint 4 NEW** |
+| /ai/stt/transcribe | planned (vendor blocked) |
+
+---

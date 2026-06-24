@@ -25,8 +25,8 @@
 
 | Status | Count |
 |---|---|
-| **OPEN** | 5 |
-| **CLOSED** | 7 |
+| **OPEN** | 4 |
+| **CLOSED** | 8 |
 | **Total** | 12 |
 
 ---
@@ -185,7 +185,7 @@
 
 ## OPEN Issues
 
-### ISS-008: VP-001 CTRS 3 overfitting for mild cases — `OPEN`
+### ISS-008: VP-001 CTRS 3 overfitting for mild cases — `CLOSED`
 
 | Field | Value |
 |---|---|

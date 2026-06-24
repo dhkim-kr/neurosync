@@ -63,3 +63,33 @@
 - VP-001 CTRS 3-4 과잉 판정 (safety prompt 조정 필요)
 - Dialogue 질문 반복 패턴 (T1-F1-DEV-010)
 - Orchestrator state machine 미구현 (T1-F0-DEV-001)
+
+---
+
+### v0.2 (2026-06-24)
+
+**Scope**: TemporalSummaryAgent + SentimentAnalyzer route + VP-002/VP-004 + ISS-008 closed
+
+**Changes**:
+- TemporalSummaryAgent: rule-based direction classification (PHQ-9/GAD-7 delta≥5, CTRS inverted, sentiment polarity) + plot-ready data
+- POST /ai/temporal/summarize route (9th AI endpoint)
+- POST /ai/sentiment/utterance + /ai/sentiment/session routes (7th, 8th endpoints)
+- VP-002 (이준호, 재진 경증) + VP-004 (최하은, 재진 중증) personas in simulation
+- ISS-008 closed: VP-001 CTRS now 4-5 (no more medium overfitting)
+- VP-001/VP-003 re-simulated with Sprint 2 prompt fixes
+
+**Completed** (32/70, 46%):
+- DEV: 23/35 (+4 temporal, +2 sentiment schema/route already counted)
+- VER: 8/28 (+1 temporal first-visit, ISS-008 verification)
+- DOC: 4/4
+- CFG: 0/3
+
+**Tests**: 102/102 passed
+**Endpoints**: 9/10 (90%)
+**Agents coded**: 8/13 (62%)
+
+**Known issues**:
+- ISS-009 (dialogue echo) — simulation framework issue, not clinical agent
+- ISS-010 (Orchestrator) — major blocker for route integration
+- ISS-011 (STT/OCR) — vendor blocked
+- ISS-012 (VP-002/VP-004 revisit sim) — personas ready, TemporalSummary integration in runner pending

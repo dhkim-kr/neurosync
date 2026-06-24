@@ -20,8 +20,10 @@ from src import __version__
 from src.routes.chat import router as chat_router
 from src.routes.handoff import router as handoff_router
 from src.routes.safety import router as safety_router
+from src.routes.sentiment import router as sentiment_router
 from src.routes.slots import router as slots_router
 from src.routes.survey import router as survey_router
+from src.routes.temporal import router as temporal_router
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
 
@@ -37,6 +39,8 @@ app.include_router(handoff_router)
 app.include_router(chat_router)
 app.include_router(slots_router)
 app.include_router(survey_router)
+app.include_router(sentiment_router)
+app.include_router(temporal_router)
 
 
 @app.get("/health")
