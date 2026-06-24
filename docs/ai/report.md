@@ -510,3 +510,29 @@ Risk: low  med  high
 **All 89 tests pass** (40 scoring + 7 survey route + 9 handoff sections + 33 keyword recall + 1 health)
 
 ---
+
+### RPT-011 [2026-06-24] T1-F1-DEV-011, DEV-012: SentimentAnalyzerAgent | DONE
+
+**Summary:** SentimentAnalyzerAgent 코드 구현 + schema 정의
+
+**구현 내역:**
+
+`agents/sentiment_analyzer.py`:
+- Mode A (per-utterance): LLM 호출로 단일 발화 감정 분류. 8종 감정 (anxiety, sadness, anger, despair, fear, hope, neutral, relief). polarity (-1~+1), arousal (low/medium/high), risk_signal boolean.
+- Mode B (session-level): per-utterance 결과 집계. dominant_emotions, emotion_distribution, polarity_trajectory, signal_strength (none/mild/moderate/strong), emotional_shift 감지, repeated_patterns.
+- Mode B는 LLM 호출 없이 순수 집계 — Mode A 결과만 aggregation.
+
+`schemas/sentiment.py`:
+- `EmotionScore`: label + intensity
+- `SentimentUtteranceInput/Output`: Mode A I/O
+- `SentimentSessionInput/Output`: Mode B I/O
+- `PolarityPoint`, `PerUtteranceTag`: 시계열/태깅 구조체
+
+**설계 결정:**
+- Mode B는 LLM 불필요 — per-utterance 결과의 통계적 집계만 수행 (비용/latency 절감)
+- signal_strength 판정: negative intensity ≥0.7 또는 negative 감정 4회+ → "strong"
+- emotional_shift 감지: 전반부/후반부 polarity 차이 > 0.3
+
+**All 89 tests pass** (기존 테스트 무영향)
+
+---

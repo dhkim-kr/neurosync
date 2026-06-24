@@ -65,8 +65,8 @@
 | T1-F1-DEV-008 | DEV | POST /ai/ocr/parse 라우트 신규 구현 | [ ] | T1-F1-DEV-004 | - |
 | T1-F1-DEV-009 | DEV | safety_classifier prompt v1 고도화 (CTRS 기반) | [x] | T1-F1-DEV-001 | RPT-009 |
 | T1-F1-DEV-010 | DEV | dialogue prompt v1 고도화 (slot tracking, 피로도 관리) | [x] | T1-F1-DEV-005 | RPT-009 |
-| T1-F1-DEV-011 | DEV | SentimentAnalyzerAgent 구현 (Mode A: per-utterance, Mode B: session) | [ ] | - | - |
-| T1-F1-DEV-012 | DEV | SentimentAnalyzer schema 정의 (SentimentInput, UtteranceOutput, SessionOutput) | [ ] | T1-F1-DEV-011 | - |
+| T1-F1-DEV-011 | DEV | SentimentAnalyzerAgent 구현 (Mode A: per-utterance, Mode B: session) | [x] | - | RPT-011 |
+| T1-F1-DEV-012 | DEV | SentimentAnalyzer schema 정의 (SentimentInput, UtteranceOutput, SessionOutput) | [x] | T1-F1-DEV-011 | RPT-011 |
 | T1-F1-DEV-013 | DEV | SentimentAnalyzer prompt v1 작성 완료 | [x] | - | RPT-005 |
 | T1-F1-VER-001 | VER | VP-001 자율 대화 시뮬레이션 (초진 경증) | [x] | T1-F0-DOC-003 | RPT-006,007 |
 | T1-F1-VER-002 | VER | VP-003 자율 대화 시뮬레이션 (초진 중증, CTRS 2-3 trigger) | [x] | T1-F0-DOC-003 | RPT-006,007 |
