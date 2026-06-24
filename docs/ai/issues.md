@@ -25,9 +25,9 @@
 
 | Status | Count |
 |---|---|
-| **OPEN** | 4 |
+| **OPEN** | 5 |
 | **CLOSED** | 8 |
-| **Total** | 12 |
+| **Total** | 13 |
 
 ---
 
@@ -276,6 +276,34 @@
 **Workaround:** None. Revisit scenarios cannot be tested until F4 is implemented.
 
 **Next action:** Implement TemporalSummaryAgent → run VP-002/VP-004 simulations.
+
+---
+
+### ISS-013: Medication keyword false positive for revisit patients — `OPEN`
+
+| Field | Value |
+|---|---|
+| **Severity** | major |
+| **Opened** | RPT-015 (2026-06-24) |
+| **Component** | `src/agents/safety_classifier.py` — `_CRITICAL_KEYWORDS` |
+| **Blocks** | All revisit patient simulations where medication is mentioned |
+
+**Description:** VP-002 (mild revisit, taking Escitalopram 10mg) triggered crisis at turn 1. The Patient LLM's opening naturally mentioned current medication, which contains "약을 먹" — a keyword in `_CRITICAL_KEYWORDS` intended to detect overdose ("약을 많이 먹었어요").
+
+**Root cause:** The keyword "약을 먹" is too broad. It matches both:
+- "약을 먹었어요" (I took a lot of pills — overdose, CRITICAL) 
+- "약을 먹고 있어요" (I'm taking medication — compliance, NOT dangerous)
+
+The space-stripped variant "약을먹" also catches "약을먹고있어요".
+
+**Impact:** Every revisit patient who mentions current medication → false critical → crisis protocol at turn 1 → blocks the entire dialogue.
+
+**Proposed fix options:**
+1. **Remove "약을 먹" from CRITICAL, keep "약을 많이 먹" only** — simplest, but may miss some overdose patterns
+2. **Add negative context patterns** — if followed by "고 있" or "는 중" → downgrade to none
+3. **Move "약을 먹" to MEDIUM** — still flags but doesn't trigger crisis
+
+**Recommended:** Option 1 (remove "약을 먹", keep "약을 많이 먹" and "약물 과다" patterns). The LLM classifier will catch nuanced overdose expressions that simple keywords miss.
 
 ---
 

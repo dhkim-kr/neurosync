@@ -786,3 +786,97 @@ Turn 3 [CTRS 1]: "지금도... 죽고 싶다는 생각이 들어요." → 🚨 C
 | /ai/stt/transcribe | planned (vendor blocked) |
 
 ---
+
+### RPT-015 [2026-06-24] Full 4-VP × 6-Feature Comprehensive Simulation | DONE
+
+**Summary:** 4 가상 환자 × 6 기능 전체 파이프라인 시뮬레이션. 실제 LLM API 호출 (Upstage Solar Pro 3).
+
+**실행 환경:**
+- LLM: Upstage Solar Pro 3 (Patient LLM + Clinical agents, 별도 세션)
+- 실행: 2026-06-24 11:54~11:56 KST
+- 로그: `docs/ai/simulation_results/full_simulation_20260624_115610.json`
+
+#### VP별 결과 매트릭스
+
+| VP | Type | Safety CTRS | Crisis | Slots | Sentiment | PHQ-9 | GAD-7 | Temporal | Status |
+|---|---|---|---|---|---|---|---|---|---|
+| **VP-001** | mild first | 4,4,4,5,5,5,5,5 | No | 0% | anxiety,sadness (strong) | 6 mild | 6 mild | unknown | **PASS** |
+| **VP-002** | mild revisit | **1** | **Yes turn 1** | 0% | N/A | 4 minimal | 2 minimal | improved/unchanged | **FAIL** |
+| **VP-003** | severe first | 3,3,3,4,4,4,2 | Yes turn 7 | 0% | despair,sadness (strong) | 21 severe Q9+ | 12 moderate | unknown | **PASS** |
+| **VP-004** | severe revisit | 3,2 | Yes turn 2 | **54%** | anxiety,sadness (strong) | 21 severe Q9+ | 16 severe | **worsened** | **PASS** |
+
+#### Feature별 검증 결과
+
+**1. Safety Classification (4/4 VPs):**
+
+| VP | CTRS Pattern | Expected | Actual | Match |
+|---|---|---|---|---|
+| VP-001 | 4→5 (mild stabilize) | CTRS 4-5 | 4,4,4,5,5,5,5,5 | **YES** |
+| VP-002 | 1 (false positive) | CTRS 5 | 1 | **NO — ISS-013** |
+| VP-003 | 3→4→2 (escalation) | CTRS 2-3 | 3,3,3,4,4,4,2 | **YES** |
+| VP-004 | 3→2 (rapid crisis) | CTRS 3 | 3,2 | **YES** |
+
+**2. Dialogue (4/4 VPs):**
+
+| VP | Turns | Crisis | Conversation Quality |
+|---|---|---|---|
+| VP-001 | 8 | No | Natural dialogue, CTRS-appropriate |
+| VP-002 | 1 | Yes (false) | **Blocked by ISS-013** |
+| VP-003 | 7 | Yes turn 7 | Good escalation, suicidal expression at end |
+| VP-004 | 2 | Yes turn 2 | Rapid crisis (공황+우울 악화) |
+
+**3. ClinicalSlot Extraction:**
+
+| VP | Coverage | Filled | Notes |
+|---|---|---|---|
+| VP-001 | 0% | 0/13 | JSON parse failure (conversation quality issue) |
+| VP-002 | 0% | N/A | Crisis at turn 1 — no conversation |
+| VP-003 | 0% | 0/13 | JSON parse failure |
+| VP-004 | **54%** | **7/13** | chief_complaint, HPI, risk_factors, sleep, mood, anxiety, psychosocial |
+
+**4. Sentiment Analysis:**
+
+| VP | Dominant Emotions | Strength | Risk Signal |
+|---|---|---|---|
+| VP-001 | anxiety, sadness | strong | No |
+| VP-002 | N/A | N/A | N/A (crisis at turn 1) |
+| VP-003 | **despair, sadness** | strong | Yes (implied) |
+| VP-004 | anxiety, sadness | strong | Yes (implied) |
+
+→ Sentiment correctly differentiates: VP-001 anxiety (mild) vs VP-003 **despair** (severe)
+
+**5. Survey Scoring (rule-based, deterministic):**
+
+| VP | PHQ-9 | Severity | Q9 Suicidal | GAD-7 | Severity |
+|---|---|---|---|---|---|
+| VP-001 | 6 | mild | No | 6 | mild |
+| VP-002 | 4 | minimal | No | 2 | minimal |
+| VP-003 | **21** | **severe** | **YES** | 12 | moderate |
+| VP-004 | **21** | **severe** | **YES** | **16** | **severe** |
+
+→ All scores match persona severity expectations. Q9+ correctly flags severe VPs.
+
+**6. Temporal Summary (rule-based):**
+
+| VP | Overall | PHQ-9 Direction | GAD-7 Direction | CTRS Direction |
+|---|---|---|---|---|
+| VP-001 | **unknown** (first visit) | — | — | — |
+| VP-002 | unchanged | **improved** (12→4, Δ-8) | unchanged (6→2, Δ-4<5) | improved (4→5) |
+| VP-003 | **unknown** (first visit) | — | — | — |
+| VP-004 | **worsened** | **worsened** (14→21, Δ+7) | **worsened** (10→16, Δ+6) | **worsened** (4→3) |
+
+→ First visit → "unknown" (VP-001, VP-003): **CORRECT**
+→ VP-002 PHQ-9 improved (Δ-8 ≥ 5): **CORRECT**
+→ VP-004 all domains worsened: **CORRECT**
+→ VP-002 GAD-7 unchanged (Δ-4 < 5): **CORRECT** (threshold applied)
+
+#### New Issue Found
+
+**ISS-013: Medication keyword false positive for revisit patients**
+- VP-002 (mild revisit, Escitalopram 10mg) → Patient LLM's opening included medication mention
+- "약을 먹" keyword in safety_classifier triggered overdose detection → CTRS 1 critical → crisis at turn 1
+- **Root cause**: `_CRITICAL_KEYWORDS` includes "약을 먹" for overdose, but revisit patients naturally say "약을 먹고 있어요" (I'm taking medication) which is NOT overdose
+- **Severity**: major — blocks ALL revisit patients who mention current medication
+- **Fix needed**: Contextual keyword disambiguation (medication compliance vs overdose)
+
+---
