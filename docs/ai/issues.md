@@ -25,8 +25,8 @@
 
 | Status | Count |
 |---|---|
-| **OPEN** | 5 |
-| **CLOSED** | 8 |
+| **OPEN** | 3 |
+| **CLOSED** | 10 |
 | **Total** | 13 |
 
 ---
@@ -261,7 +261,7 @@
 
 ---
 
-### ISS-012: VP-002/VP-004 revisit simulations not executed — `OPEN`
+### ISS-012: VP-002/VP-004 revisit simulations not executed — `CLOSED`
 
 | Field | Value |
 |---|---|
@@ -279,7 +279,7 @@
 
 ---
 
-### ISS-013: Medication keyword false positive for revisit patients — `PARTIAL`
+### ISS-013: Medication keyword false positive for revisit patients — `CLOSED`
 
 | Field | Value |
 |---|---|
