@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-24T11:56:10.037870",
+  "timestamp": "2026-06-24T12:28:38.258258",
   "personas": [
     {
       "id": "VP-001",
@@ -52,7 +52,7 @@
       "temporal_overall": "unknown",
       "temporal_trends": [],
       "errors": [],
-      "latency_ms": 40770.4
+      "latency_ms": 65232.5
     },
     {
       "id": "VP-002",
@@ -102,7 +102,7 @@
         }
       ],
       "errors": [],
-      "latency_ms": 1901.7
+      "latency_ms": 1971.9
     },
     {
       "id": "VP-003",
@@ -110,30 +110,36 @@
       "severity": "severe",
       "is_revisit": false,
       "safety_ctrs": [
-        3,
-        3,
-        3,
         4,
-        4,
-        4,
-        2
+        3,
+        1
       ],
       "crisis": true,
-      "crisis_turn": 7,
-      "dialogue_turns": 7,
-      "slot_coverage": 0.0,
-      "filled_slots": [],
+      "crisis_turn": 3,
+      "dialogue_turns": 3,
+      "slot_coverage": 0.69,
+      "filled_slots": [
+        "chief_complaint",
+        "history_of_present_illness",
+        "risk_factors",
+        "symptoms.sleep",
+        "symptoms.mood",
+        "symptoms.energy",
+        "symptoms.anxiety",
+        "psychosocial_context",
+        "substance_use"
+      ],
       "sentiment": {
         "dominant_emotions": [
-          "despair",
-          "sadness"
+          "sadness",
+          "despair"
         ],
         "signal_strength": "strong",
         "shift_detected": false,
         "shift_description": "",
         "repeated_patterns": [
-          "despair 표현 7회 반복",
-          "sadness 표현 4회 반복"
+          "sadness 표현 3회 반복",
+          "despair 표현 3회 반복"
         ]
       },
       "survey": [
@@ -154,7 +160,7 @@
       "temporal_overall": "unknown",
       "temporal_trends": [],
       "errors": [],
-      "latency_ms": 30038.3
+      "latency_ms": 27680.7
     },
     {
       "id": "VP-004",
@@ -163,21 +169,19 @@
       "is_revisit": true,
       "safety_ctrs": [
         3,
-        2
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
       ],
-      "crisis": true,
-      "crisis_turn": 2,
-      "dialogue_turns": 2,
-      "slot_coverage": 0.54,
-      "filled_slots": [
-        "chief_complaint",
-        "history_of_present_illness",
-        "risk_factors",
-        "symptoms.mood",
-        "symptoms.concentration",
-        "symptoms.anxiety",
-        "psychosocial_context"
-      ],
+      "crisis": false,
+      "crisis_turn": null,
+      "dialogue_turns": 8,
+      "slot_coverage": 0.0,
+      "filled_slots": [],
       "sentiment": {
         "dominant_emotions": [
           "anxiety",
@@ -186,7 +190,11 @@
         "signal_strength": "strong",
         "shift_detected": false,
         "shift_description": "",
-        "repeated_patterns": []
+        "repeated_patterns": [
+          "anxiety 표현 8회 반복",
+          "sadness 표현 8회 반복",
+          "fear 표현 3회 반복"
+        ]
       },
       "survey": [
         {
@@ -222,7 +230,7 @@
         }
       ],
       "errors": [],
-      "latency_ms": 13037.0
+      "latency_ms": 53602.6
     }
   ]
 }
