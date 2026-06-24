@@ -536,3 +536,192 @@ Risk: low  med  high
 **All 89 tests pass** (기존 테스트 무영향)
 
 ---
+
+### RPT-012 [2026-06-24] Sprint 1-3 통합 검증 대시보드 | NOTE
+
+**Purpose:** 모니터링용 통합 검증 현황. Sprint 1~3까지 모든 테스트 결과를 한 곳에서 조회할 수 있도록 정리.
+
+---
+
+#### 1. 전체 테스트 실행 결과 (2026-06-24 실행)
+
+```
+Platform:  Python 3.12.13, pytest 9.0.3
+Ran at:    2026-06-24
+Duration:  0.60s
+Result:    89 passed, 0 failed, 0 errors
+```
+
+#### 2. 테스트 파일별 상세 결과
+
+| Test File | Tests | Passed | Failed | Category |
+|---|---|---|---|---|
+| `test_health.py` | 1 | 1 | 0 | 인프라 |
+| `test_survey_scoring.py` | 39 | 39 | 0 | F3: 구조화 문진 (rule-based) |
+| `test_survey_route.py` | 7 | 7 | 0 | F3: POST /ai/survey/score HTTP |
+| `test_handoff_sections.py` | 9 | 9 | 0 | F5: 12-section 완전성 + CTRS alignment |
+| `test_safety_keyword_recall.py` | 33 | 33 | 0 | F1: 위기 키워드 recall |
+| **Total** | **89** | **89** | **0** | |
+
+#### 3. 검증 시나리오별 상세
+
+##### 3-A. Survey Scoring (39 tests) — T1-F3-VER-001, VER-002
+
+순수 rule-based, LLM 호출 없음, 결정론적.
+
+| Scale | Boundary Tests | Edge Cases | All Pass? |
+|---|---|---|---|
+| **PHQ-9** | 0,4,5,9,10,14,15,19,20,27 | Q9 suicidal flag, wrong count, out-of-range | **YES (14/14)** |
+| **GAD-7** | 0,4,5,9,10,14,15,21 | no critical items, wrong count | **YES (10/10)** |
+| **PHQ-4** | 0,2,3,5,6,8,9,12 | anxiety/depression subscales | **YES (9/9)** |
+| **WHO-5** | low_wellbeing(13), adequate(15), max(25) | percentage conversion | **YES (3/3)** |
+| **AUDIT-C** | male threshold(4), female threshold(3) | sex-specific | **YES (2/2)** |
+| Invalid | unsupported scale name | - | **YES (1/1)** |
+
+**PHQ-9 Critical Item (Q9 자살사고) 검증:**
+```
+Input:  [0, 0, 0, 0, 0, 0, 0, 0, 2]  (Q9=2)
+Output: critical_item_positive=true, recommended_action="safety_referral"
+Result: PASS
+```
+
+##### 3-B. Survey Route HTTP (7 tests) — T1-F3-DEV-004
+
+| Test | Input | Expected | Actual | Status |
+|---|---|---|---|---|
+| PHQ-9 valid | `[1,1,1,1,1,1,1,1,0]` | 200, score=8, mild | 200, score=8, mild | **PASS** |
+| PHQ-9 Q9+ | `[0,0,0,0,0,0,0,0,2]` | 200, critical_item=true | 200, critical_item=true | **PASS** |
+| GAD-7 valid | `[2,2,2,2,2,2,2]` | 200, score=14, moderate | 200, score=14, moderate | **PASS** |
+| AUDIT-C female | `[1,1,1]`, sex=female | 200, hazardous (≥3) | 200, hazardous | **PASS** |
+| Invalid scale | "INVALID" | 422 | 422 | **PASS** |
+| Wrong count | PHQ-9, 2 items | 422 | 422 | **PASS** |
+| Out of range | PHQ-9, Q9=5 | 422 | 422 | **PASS** |
+
+##### 3-C. Handoff 12-Section Verification (9 tests) — T1-F5-VER-005
+
+| Test | Scenario | Expected | Actual | Status |
+|---|---|---|---|---|
+| All 12 present | 섹션 1-12 모두 포함 | 0 errors | 0 errors | **PASS** |
+| Section 5 missing | 필수 섹션 누락 | error | error (severity=error) | **PASS** |
+| Section 9 missing (revisit) | 재진인데 종단 누락 | warning | warning | **PASS** |
+| Section 9 missing (first visit) | 초진이면 종단 불필요 | 0 issues | 0 issues | **PASS** |
+| CTRS 1 + 119 | 초응급 + 응급 안내 있음 | 0 issues | 0 issues | **PASS** |
+| CTRS 1 no emergency | 초응급인데 응급 없음 | error | error | **PASS** |
+| CTRS 5 no req | 안정기, 특별 요구 없음 | 0 issues | 0 issues | **PASS** |
+| Matching refs | 본문=레지스트리 | 0 dangling | 0 dangling | **PASS** |
+| Body ref not in registry | [ev_msg_002] 본문만 | 1 dangling | 1 dangling | **PASS** |
+
+##### 3-D. Safety Keyword Recall (33 tests) — T1-F1-VER-006
+
+| Category | Phrases Tested | Detected | Recall | Status |
+|---|---|---|---|---|
+| **Critical (CTRS 1)** | 자살, 죽고싶, 목숨, 끝내고싶, 죽을, 죽어버리, 세상을떠나, 유서, 자해, 손목을그, 칼로, 약을많이먹 (13) | 13 | **100%** | **PASS** |
+| **High (CTRS 2)** | 살고싶지않, 사라지고싶, 없어지고싶, 해치고싶, 때리고싶, 죽이고싶 (6) | 6 | **100%** | **PASS** |
+| **Medium (CTRS 3)** | 힘들어서못살, 너무힘들, 미치겠, 포기하고싶, 희망이없, 의미가없 (6) | 6 | **100%** | **PASS** |
+| **Safe (no trigger)** | 안녕하세요, 잠못자요, 스트레스, 가슴답답, 그런생각없어요, 피곤해요 (6) | 0 false pos | **100%** | **PASS** |
+| **High+Critical aggregate** | 19 phrases | 19 | **100% (target ≥95%)** | **PASS** |
+| **Overall aggregate** | 25 phrases | 25 | **100% (target ≥90%)** | **PASS** |
+
+**Conjugation fix applied (RPT-010):**
+- "손목을 그었어요" (past tense 긋→그) → added "손목을 그" variant
+- "약을 많이 먹었어요" (insertion 많이) → added "약을 많이 먹" variant
+
+#### 4. LLM 시뮬레이션 결과 (가장 최근: Run 5, 2026-06-19)
+
+> 실제 Upstage Solar Pro 3 API를 호출한 Patient LLM ↔ Clinical Pipeline 시뮬레이션
+
+| VP | 유형 | 턴 | Crisis | CTRS | Dialogue Slots | ClinicalSlot | Essential | Status |
+|---|---|---|---|---|---|---|---|---|
+| **VP-001** (김서연) | 경증 초진 | 10 | No | 3-5 | 23% (3/13) | **69% (9/13)** | **5/5** | **PASS** |
+| **VP-003** (박민수) | 중증 초진 | 3 | **Yes (turn 3)** | 4→3→**1** | 0% | N/A | N/A | **PASS** |
+
+**VP-001 턴별 Safety 판정:**
+```
+Turn:  1    2    3    4    5    6    7    8    9   10
+CTRS:  4    3    3    3    3    4    4    4    3    3
+Risk: low  med  med  med  med  low  low  low  med  med
+```
+→ 경증 환자에서 CTRS 3(medium) 빈발 — **Sprint 2에서 safety prompt 수정 완료** (context-dependent rules 추가). 재시뮬레이션은 Sprint 3-A에서 예정이었으나 아직 미실행.
+
+**VP-003 턴별 대화 원문:**
+```
+Turn 1 [CTRS 3]: "요즘 잠을 거의 못 자고... 식욕도 없고... 아무것도 하고 싶지 않아요."
+Turn 2 [CTRS 3]: "시작은... 기억이 잘 안 나요. 다 끝났으면 좋겠다는 생각이 들어요."
+Turn 3 [CTRS 1]: "지금도... 죽고 싶다는 생각이 들어요." → 🚨 CRISIS → 109/119 안내
+```
+
+#### 5. API Endpoint 현황
+
+| # | Endpoint | Method | Status | Test Coverage |
+|---|---|---|---|---|
+| 1 | `/health` | GET | existing | 1 test |
+| 2 | `/ai/safety/classify` | POST | existing | 33 keyword + simulation |
+| 3 | `/ai/chat/respond` | POST | existing (enhanced) | simulation |
+| 4 | `/ai/handoff/generate` | POST | existing (enhanced) | 9 section tests |
+| 5 | `/ai/slots/extract` | POST | **NEW (Sprint 2)** | integration ready |
+| 6 | `/ai/survey/score` | POST | **NEW (Sprint 2)** | 7 HTTP tests |
+| 7 | `/ai/stt/transcribe` | POST | planned | - |
+| 8 | `/ai/ocr/parse` | POST | planned | - |
+| 9 | `/ai/temporal/retrieve` | POST | planned | - |
+| 10 | `/ai/temporal/summarize` | POST | planned | - |
+
+**Implemented: 6/10 (60%)**
+
+#### 6. Clinical Agent 현황
+
+| # | Agent | Code File | Status | Test |
+|---|---|---|---|---|
+| 01 | Orchestrator | - | **NOT IMPL** | - |
+| 02 | SafetyClassifier | `agents/safety_classifier.py` | **DONE** | 33 keyword + simulation |
+| 03 | Dialogue | `routes/chat.py` (inline) | **DONE** (inline) | simulation |
+| 04 | ClinicalSlot | `agents/clinical_slot.py` | **DONE** | simulation (69% coverage) |
+| 05 | InputNormalizer | - | NOT IMPL | - |
+| 06 | STT | - | NOT IMPL | - |
+| 07 | OCR | - | NOT IMPL | - |
+| 08 | TemporalRetriever | - | NOT IMPL | - |
+| 09 | TemporalSummary | - | NOT IMPL | - |
+| 10 | HandoffGenerator | `agents/handoff_generator.py` | **DONE** | 9 section tests |
+| 11 | EvidenceVerifier | `agents/evidence_verifier.py` | **DONE** (6 rules) | 9 section tests |
+| 12 | PromptEval | - | offline | - |
+| 13 | SentimentAnalyzer | `agents/sentiment_analyzer.py` | **DONE** | import verified |
+
+**Implemented: 7/13 code (54%), 5 tested**
+
+#### 7. Checklist Progress
+
+| Sprint | Items Done | Cumulative | % |
+|---|---|---|---|
+| Sprint 1 (v0.1) | 16 | 16/70 | 23% |
+| Sprint 2 | +8 | 24/70 | 34% |
+| Sprint 3 | +3 | 27/70 | **39%** |
+
+| Category | Done | Total | % |
+|---|---|---|---|
+| DEV | 19 | 35 | 54% |
+| VER | 7 | 28 | 25% |
+| DOC | 4 | 4 | 100% |
+| CFG | 0 | 3 | 0% |
+
+#### 8. Known Issues (Open)
+
+| # | Issue | Severity | Since | Related ID |
+|---|---|---|---|---|
+| 1 | VP-001 CTRS 3 빈발 (경증인데 medium) | Minor | RPT-007 | Safety prompt 수정 완료, 재시뮬레이션 필요 |
+| 2 | Dialogue 질문 반복 패턴 | Minor | RPT-007 | Dialogue prompt 수정 완료, 재시뮬레이션 필요 |
+| 3 | Orchestrator 미구현 | Major | - | T1-F0-DEV-001 (모든 route 통합의 blocker) |
+| 4 | STT/OCR adapter 미구현 | Major | - | T1-F1-DEV-002/003/004 |
+| 5 | VP-002/VP-004 (재진) 시뮬레이션 미실행 | Info | - | Blocked on F4 (TemporalSummary) |
+
+#### 9. Bugs Found & Fixed (Cumulative)
+
+| # | Bug | Found In | Fixed In | Root Cause |
+|---|---|---|---|---|
+| 1 | JSON echo loop | RPT-006 Run 1 | RPT-006 Run 3 | Patient LLM role mapping inverted |
+| 2 | DialogueLLMResponse import scope | RPT-007 | RPT-007 | Lazy import inside except block |
+| 3 | "손목을 그었어요" keyword miss | RPT-010 | RPT-010 | Korean conjugation (긋→그) not covered |
+| 4 | "약을 많이 먹었어요" keyword miss | RPT-010 | RPT-010 | Word insertion between keyword parts |
+| 5 | RiskLevel StrEnum comparison | RPT-010 | RPT-010 | Alphabetical ordering (critical < high) |
+| 6 | ClinicalSlot schema inline | RPT-008 | RPT-008 | Convention violation (schemas in agents/) |
+| 7 | Checklist dependency overstatement | RPT-008 | RPT-008 | VER items had stricter deps than needed |
+
+---
