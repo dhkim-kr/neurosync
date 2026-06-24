@@ -279,7 +279,7 @@
 
 ---
 
-### ISS-013: Medication keyword false positive for revisit patients — `OPEN`
+### ISS-013: Medication keyword false positive for revisit patients — `PARTIAL`
 
 | Field | Value |
 |---|---|

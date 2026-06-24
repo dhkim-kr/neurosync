@@ -880,3 +880,39 @@ Turn 3 [CTRS 1]: "지금도... 죽고 싶다는 생각이 들어요." → 🚨 C
 - **Fix needed**: Contextual keyword disambiguation (medication compliance vs overdose)
 
 ---
+
+### RPT-016 [2026-06-24] Sprint 5: ISS-013 fix + Verification wave + Re-sim | DONE
+
+**Summary:** ISS-013 keyword fix + 15 new VER tests + full 4-VP re-simulation
+
+**Phase 1 — ISS-013 keyword fix:**
+- Removed `("약을 먹", "self_harm_overdose")` from `_CRITICAL_KEYWORDS`
+- Kept `("약을 많이 먹", ...)` and added `("약물 과다", ...)`
+- Verified: "약을 먹고 있어요" → none (0 false positive)
+- **Keyword side FIXED.** But VP-002 still triggers CTRS 1 from **LLM classifier** — the LLM over-classifies revisit patient's medication discussion as high risk. This is a separate LLM prompt issue (ISS-013 remains PARTIAL).
+
+**Phase 2 — 15 new verification tests (all pass):**
+
+| Test File | Tests | VER IDs | Results |
+|---|---|---|---|
+| `test_temporal_verification.py` | 11 | VER-001/002/004 | VP-002 improved, VP-004 worsened, reversal detected |
+| `test_evidence_coverage.py` | 4 | VER-006 | Full coverage, dangling refs, orphan evidence, unsupported claims |
+| **Total new** | **15** | | **15/15 passed** |
+
+**Phase 3 — Full 4-VP re-simulation after fix:**
+
+| VP | CTRS | Crisis | Slots | Sentiment | Temporal | Status |
+|---|---|---|---|---|---|---|
+| VP-001 | 4,4,4,5,5,5,5,5 | No | 0% | anxiety,sadness | unknown | **PASS** |
+| VP-002 | **1** | **Yes t1** | 0% | N/A | improved | **FAIL (LLM)** |
+| VP-003 | 4,3,**1** | Yes t3 | **69%** | sadness,despair | unknown | **PASS** |
+| VP-004 | 3,3,3,3,3,3,3,3 | No | 0% | anxiety,sadness | **worsened** | **PASS** |
+
+**Improvements vs RPT-015:**
+- VP-003: ClinicalSlot 0% → **69%** (9/13 slots)
+- VP-004: Now survives 8 turns (was 2) without false crisis
+- VP-004 temporal: correctly detects **worsened** (PHQ-9 +7, GAD-7 +6, CTRS -1)
+
+**Test count: 118/118 passed** (102 prior + 3 keyword + 11 temporal + 4 evidence - 2 adjusted)
+
+---

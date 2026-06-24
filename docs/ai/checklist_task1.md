@@ -119,10 +119,10 @@
 | T1-F4-DEV-002 | DEV | POST /ai/temporal/summarize 라우트 신규 구현 | [x] | T1-F4-DEV-001 | RPT-014 |
 | T1-F4-DEV-003 | DEV | Direction classification 로직 (improved/worsened/unchanged/unknown) | [x] | T1-F4-DEV-001 | RPT-014 |
 | T1-F4-DEV-004 | DEV | Plot-ready time-series data 생성 모듈 | [x] | T1-F4-DEV-003 | RPT-014 |
-| T1-F4-VER-001 | VER | VP-002 종단 비교 테스트 (경증 호전) | [ ] | T1-F4-DEV-002, T1-F0-DOC-003 | - |
-| T1-F4-VER-002 | VER | VP-004 종단 비교 테스트 (중증 악화, 새 증상 감지) | [ ] | T1-F4-DEV-002, T1-F0-DOC-003 | - |
+| T1-F4-VER-001 | VER | VP-002 종단 비교 테스트 (경증 호전) | [x] | T1-F4-DEV-002, T1-F0-DOC-003 | RPT-016 |
+| T1-F4-VER-002 | VER | VP-004 종단 비교 테스트 (중증 악화, 새 증상 감지) | [x] | T1-F4-DEV-002, T1-F0-DOC-003 | RPT-016 |
 | T1-F4-VER-003 | VER | VP-001/VP-003 초진 시 전체 "unknown" 반환 테스트 | [x] | T1-F4-DEV-002 | RPT-014 |
-| T1-F4-VER-004 | VER | 모순 감지 테스트 (이전 "호전" vs 현재 "악화") | [ ] | T1-F4-DEV-003 | - |
+| T1-F4-VER-004 | VER | 모순 감지 테스트 (이전 "호전" vs 현재 "악화") | [x] | T1-F4-DEV-003 | RPT-016 |
 
 ---
 
@@ -140,7 +140,7 @@
 | T1-F5-VER-003 | VER | VP-003 handoff report (CTRS 2-3 고위험) 생성 + 검증 | [ ] | T1-F5-DEV-005, T1-F1-DEV-001 | - |
 | T1-F5-VER-004 | VER | VP-004 handoff report (종단 악화) 생성 + 검증 | [ ] | T1-F5-DEV-005, T1-F4-DEV-001 | - |
 | T1-F5-VER-005 | VER | 12-section 완전성 자동 검증 | [x] | T1-F5-DEV-001 | RPT-009 |
-| T1-F5-VER-006 | VER | Evidence citation 100% coverage 테스트 | [ ] | T1-F5-DEV-002 | - |
+| T1-F5-VER-006 | VER | Evidence citation 100% coverage 테스트 | [x] | T1-F5-DEV-002 | RPT-016 |
 
 ---
 
