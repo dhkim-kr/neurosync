@@ -43,16 +43,20 @@ class TemporalSummaryAgent(BaseAgent):
         # Sentiment
         sentiment = self._compare_sentiment(inp.current_sentiment_polarity, inp.prior_sentiment_polarity)
 
-        # Overall direction: majority vote, worsened takes priority
+        # Overall direction: worsened takes priority, then majority vote
         directions = [t.direction for t in trends if t.direction != DomainDirection.unknown]
-        if any(d == DomainDirection.worsened for d in directions):
-            overall = DomainDirection.worsened
-        elif all(d == DomainDirection.improved for d in directions):
-            overall = DomainDirection.improved
-        elif directions:
-            overall = DomainDirection.unchanged
-        else:
+        if not directions:
             overall = DomainDirection.unknown
+        elif any(d == DomainDirection.worsened for d in directions):
+            overall = DomainDirection.worsened
+        else:
+            improved_count = sum(1 for d in directions if d == DomainDirection.improved)
+            if improved_count > len(directions) / 2:
+                overall = DomainDirection.improved
+            elif improved_count == 0:
+                overall = DomainDirection.unchanged
+            else:
+                overall = DomainDirection.unchanged
 
         # Plot data
         plot = []
@@ -123,7 +127,7 @@ class TemporalSummaryAgent(BaseAgent):
     def _compare_sentiment(current: float | None, prior: float | None) -> SentimentTrend:
         if current is None or prior is None:
             return SentimentTrend(direction=DomainDirection.unknown, note="Sentiment 데이터 없음")
-        delta = current - prior
+        delta = round(current - prior, 10)
         if delta > 0.3:
             direction = DomainDirection.improved
         elif delta < -0.3:

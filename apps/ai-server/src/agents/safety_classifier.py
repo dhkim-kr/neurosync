@@ -237,12 +237,15 @@ class SafetyClassifierAgent(BaseAgent):
                 except Exception as fb_exc:
                     logger.error("Fallback safety classification also failed: %s", fb_exc)
 
-            # All LLM paths failed — return conservative default
+            # All LLM paths failed — return none for LLM path.
+            # The merge with rule_classify result preserves any danger the rules found.
+            # If BOTH rule + LLM fail to detect anything, the orchestrator's safety
+            # timeout handler defaults to CTRS 2 as the safe-side fallback.
             return (
                 SafetyClassification(
                     risk_level=RiskLevel.none,
                     confidence=0.0,
-                    reason_summary="All LLM paths failed — rule engine only",
+                    reason_summary="LLM classification unavailable — using rule engine only",
                 ),
                 "none",
                 0.0,
