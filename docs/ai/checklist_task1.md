@@ -36,7 +36,7 @@
 
 | ID | Type | 항목 | 상태 | 선행 조건 | Report 참조 |
 |---|---|---|---|---|---|
-| T1-F0-DEV-001 | DEV | Orchestrator state machine 구현 (ReceiveInput->SafetyGate->ContextRetrieval->Dialogue->SlotExtraction->HandoffReady) | [ ] | - | - |
+| T1-F0-DEV-001 | DEV | Orchestrator state machine 구현 (ReceiveInput->SafetyGate->ContextRetrieval->Dialogue->SlotExtraction->HandoffReady) | [x] | - | RPT-018 |
 | T1-F0-DEV-002 | DEV | CTRS <-> RiskLevel 매핑 enum 구현 | [x] | - | RPT-001 |
 | T1-F0-DEV-003 | DEV | agent_model_registry.yaml 전체 agent 등록 확인 | [x] | - | RPT-008 |
 | T1-F0-DEV-004 | DEV | PromptLoader 경로 설정 및 검증 | [x] | - | RPT-008 |
@@ -46,8 +46,8 @@
 | T1-F0-DOC-002 | DOC | checklist_task1.md 작성 | [x] | - | - |
 | T1-F0-DOC-003 | DOC | 가상 환자 Persona VP-001~VP-004 작성 | [x] | T1-F0-DOC-001 | - |
 | T1-F0-DOC-004 | DOC | Patient LLM 시뮬레이션 사양서 작성 | [x] | T1-F0-DOC-003 | - |
-| T1-F0-VER-001 | VER | Orchestrator 전체 파이프라인 end-to-end 테스트 | [ ] | T1-F0-DEV-001, T1-F5-DEV-005 | - |
-| T1-F0-VER-002 | VER | 전체 VP 4명 통합 시뮬레이션 | [ ] | T1-F0-VER-001, T1-F0-DOC-003 | - |
+| T1-F0-VER-001 | VER | Orchestrator 전체 파이프라인 end-to-end 테스트 | [x] | T1-F0-DEV-001, T1-F5-DEV-005 | RPT-020 |
+| T1-F0-VER-002 | VER | 전체 VP 4명 통합 시뮬레이션 | [x] | T1-F0-VER-001, T1-F0-DOC-003 | RPT-020 |
 
 ---
 
@@ -56,11 +56,11 @@
 | ID | Type | 항목 | 상태 | 선행 조건 | Report 참조 |
 |---|---|---|---|---|---|
 | T1-F1-DEV-001 | DEV | SafetyClassifierAgent CTRS 5단계 매핑 반영 | [x] | T1-F0-DEV-002 | RPT-002 |
-| T1-F1-DEV-002 | DEV | InputNormalizerAgent 구현 | [ ] | - | - |
+| T1-F1-DEV-002 | DEV | InputNormalizerAgent 구현 | [x] | - | RPT-019 |
 | T1-F1-DEV-003 | DEV | STT Agent + SKT A.X adapter 구현 | [ ] | - | - |
 | T1-F1-DEV-004 | DEV | OCR Agent + Upstage Document Parse adapter 구현 | [ ] | - | - |
 | T1-F1-DEV-005 | DEV | DialogueAgent slot coverage tracking 구현 | [x] | - | RPT-007 |
-| T1-F1-DEV-006 | DEV | POST /ai/chat/respond 라우트 Orchestrator 연동 리팩토링 | [ ] | T1-F0-DEV-001 | - |
+| T1-F1-DEV-006 | DEV | POST /ai/chat/respond 라우트 Orchestrator 연동 리팩토링 | [x] | T1-F0-DEV-001 | RPT-019 |
 | T1-F1-DEV-007 | DEV | POST /ai/stt/transcribe 라우트 신규 구현 | [ ] | T1-F1-DEV-003 | - |
 | T1-F1-DEV-008 | DEV | POST /ai/ocr/parse 라우트 신규 구현 | [ ] | T1-F1-DEV-004 | - |
 | T1-F1-DEV-009 | DEV | safety_classifier prompt v1 고도화 (CTRS 기반) | [x] | T1-F1-DEV-001 | RPT-009 |
@@ -74,8 +74,8 @@
 | T1-F1-VER-004 | VER | STT->InputNormalizer 정규화 정확도 테스트 | [ ] | T1-F1-DEV-002, T1-F1-DEV-003 | - |
 | T1-F1-VER-005 | VER | Slot coverage convergence 테스트 (15턴 이내 0.7 달성) | [!] | T1-F1-DEV-005 | RPT-013: Patient LLM echo 미해결 |
 | T1-F1-VER-006 | VER | 위기 키워드 recall >= 95% 회귀 테스트 | [x] | T1-F1-DEV-001, T1-F1-DEV-009 | RPT-010 |
-| T1-F1-VER-007 | VER | SentimentAnalyzer per-utterance 정확도 테스트 (경증/중증 발화 20건) | [ ] | T1-F1-DEV-011 | - |
-| T1-F1-VER-008 | VER | SentimentAnalyzer session-level report 정합성 테스트 | [ ] | T1-F1-DEV-011 | - |
+| T1-F1-VER-007 | VER | SentimentAnalyzer per-utterance 정확도 테스트 (경증/중증 발화 20건) | [x] | T1-F1-DEV-011 | RPT-018 |
+| T1-F1-VER-008 | VER | SentimentAnalyzer session-level report 정합성 테스트 | [x] | T1-F1-DEV-011 | RPT-018 |
 
 ---
 
@@ -103,11 +103,11 @@
 | T1-F3-DEV-002 | DEV | POST /ai/slots/extract 라우트 신규 구현 | [x] | T1-F3-DEV-001 | RPT-009 |
 | T1-F3-DEV-003 | DEV | Rule-based scoring engine (PHQ-9, GAD-7, PHQ-4, WHO-5, AUDIT-C) | [x] | - | RPT-003 |
 | T1-F3-DEV-004 | DEV | POST /ai/survey/score 라우트 신규 구현 (rule-based, no LLM) | [x] | T1-F3-DEV-003 | RPT-009 |
-| T1-F3-DEV-005 | DEV | Survey Planner 로직 Orchestrator에 통합 | [ ] | T1-F0-DEV-001, T1-F3-DEV-001 | - |
+| T1-F3-DEV-005 | DEV | Survey Planner 로직 Orchestrator에 통합 | [x] | T1-F0-DEV-001, T1-F3-DEV-001 | RPT-018 |
 | T1-F3-VER-001 | VER | PHQ-9 scoring unit test (알려진 입력 -> 예상 점수) | [x] | T1-F3-DEV-003 | RPT-004 |
 | T1-F3-VER-002 | VER | GAD-7 scoring unit test | [x] | T1-F3-DEV-003 | RPT-004 |
-| T1-F3-VER-003 | VER | VP별 slot extraction 정확도 비교 | [ ] | T1-F3-DEV-002, T1-F0-DOC-003 | - |
-| T1-F3-VER-004 | VER | 자살 문항 양성 시 Safety 연동 테스트 | [ ] | T1-F3-DEV-005, T1-F1-DEV-001 | - |
+| T1-F3-VER-003 | VER | VP별 slot extraction 정확도 비교 | [x] | T1-F3-DEV-002, T1-F0-DOC-003 | RPT-018 |
+| T1-F3-VER-004 | VER | 자살 문항 양성 시 Safety 연동 테스트 | [x] | T1-F3-DEV-005, T1-F1-DEV-001 | RPT-018 |
 
 ---
 
@@ -133,12 +133,12 @@
 | T1-F5-DEV-001 | DEV | HandoffGenerator 12-section 템플릿 강화 | [x] | - | RPT-009 |
 | T1-F5-DEV-002 | DEV | Evidence registry 완전성 강화 | [x] | T1-F5-DEV-001 | RPT-009 |
 | T1-F5-DEV-003 | DEV | CTRS-action 일관성 검증 로직 추가 | [x] | T1-F0-DEV-002, T1-F5-DEV-001 | RPT-009 |
-| T1-F5-DEV-004 | DEV | PDF/JSON 듀얼 출력 모듈 | [ ] | T1-F5-DEV-001 | - |
-| T1-F5-DEV-005 | DEV | POST /ai/handoff/generate 라우트 전체 파이프라인 연동 | [ ] | T1-F5-DEV-001, T1-F0-DEV-001 | - |
-| T1-F5-VER-001 | VER | VP-001 handoff report 생성 + EvidenceVerifier 검증 | [ ] | T1-F5-DEV-005, T1-F0-DOC-003 | - |
-| T1-F5-VER-002 | VER | VP-002 handoff report (종단 데이터 포함) 생성 + 검증 | [ ] | T1-F5-DEV-005, T1-F4-DEV-001 | - |
-| T1-F5-VER-003 | VER | VP-003 handoff report (CTRS 2-3 고위험) 생성 + 검증 | [ ] | T1-F5-DEV-005, T1-F1-DEV-001 | - |
-| T1-F5-VER-004 | VER | VP-004 handoff report (종단 악화) 생성 + 검증 | [ ] | T1-F5-DEV-005, T1-F4-DEV-001 | - |
+| T1-F5-DEV-004 | DEV | PDF/JSON 듀얼 출력 모듈 | [x] | T1-F5-DEV-001 | RPT-019 |
+| T1-F5-DEV-005 | DEV | POST /ai/handoff/generate 라우트 전체 파이프라인 연동 | [x] | T1-F5-DEV-001, T1-F0-DEV-001 | RPT-019 |
+| T1-F5-VER-001 | VER | VP-001 handoff report 생성 + EvidenceVerifier 검증 | [x] | T1-F5-DEV-005, T1-F0-DOC-003 | RPT-020 |
+| T1-F5-VER-002 | VER | VP-002 handoff report (종단 데이터 포함) 생성 + 검증 | [x] | T1-F5-DEV-005, T1-F4-DEV-001 | RPT-020 |
+| T1-F5-VER-003 | VER | VP-003 handoff report (CTRS 2-3 고위험) 생성 + 검증 | [x] | T1-F5-DEV-005, T1-F1-DEV-001 | RPT-020 |
+| T1-F5-VER-004 | VER | VP-004 handoff report (종단 악화) 생성 + 검증 | [x] | T1-F5-DEV-005, T1-F4-DEV-001 | RPT-020 |
 | T1-F5-VER-005 | VER | 12-section 완전성 자동 검증 | [x] | T1-F5-DEV-001 | RPT-009 |
 | T1-F5-VER-006 | VER | Evidence citation 100% coverage 테스트 | [x] | T1-F5-DEV-002 | RPT-016 |
 

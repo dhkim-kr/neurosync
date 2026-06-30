@@ -25,9 +25,9 @@
 
 | Status | Count |
 |---|---|
-| **OPEN** | 3 |
-| **CLOSED** | 10 |
-| **Total** | 13 |
+| **OPEN** | 2 |
+| **CLOSED** | 16 |
+| **Total** | 18 |
 
 ---
 
@@ -219,25 +219,22 @@
 
 ---
 
-### ISS-010: Orchestrator state machine not implemented — `OPEN`
+### ISS-010: Orchestrator state machine not implemented — `CLOSED`
 
 | Field | Value |
 |---|---|
 | **Severity** | major |
 | **Opened** | Sprint 1 (2026-06-18) |
-| **Component** | `src/agents/orchestrator.py` (does not exist) |
+| **Fixed** | Sprint 6 (2026-06-18) |
+| **Component** | `src/agents/orchestrator.py` |
 | **Blocks** | T1-F1-DEV-006, T1-F3-DEV-005, T1-F5-DEV-005, T1-F0-VER-001, T1-F0-VER-002 |
 | **Related** | T1-F0-DEV-001 |
 
-**Description:** No Orchestrator agent exists. The full pipeline (SafetyGate → ContextRetrieval → Dialogue → SlotExtraction → HandoffReady) runs inline in `routes/chat.py` or manually in the simulation runner. This prevents:
-- Route-level agent coordination
-- State machine transitions (dialogue ↔ survey ↔ handoff)
-- Survey planner integration
-- Full end-to-end handoff pipeline
+**Description:** No Orchestrator agent exists. The full pipeline (SafetyGate → ContextRetrieval → Dialogue → SlotExtraction → HandoffReady) runs inline in `routes/chat.py` or manually in the simulation runner.
 
-**Workaround:** Simulation runner manually orchestrates agents. Routes work independently.
+**Fix:** Implemented `OrchestratorAgent` with 11-state state machine (input_received → safety_gate → context_retrieval → dialogue_loop → slot_extraction → handoff_generation → evidence_verification → handoff_delivery + crisis_flow, completed, error). Rule-based routing (no LLM). Crisis CTRS 1-2 triggers immediate crisis_flow with level-specific messages. Slot coverage threshold (0.7) gates dialogue→extraction transition. Safety timeout defaults to CTRS 2 (safe-side). 23 unit tests pass.
 
-**Next action:** Implement `agents/orchestrator.py` with state machine.
+**Verification:** 23/23 tests pass (state transitions, crisis flow, slot coverage gating, session serialization, audit trail).
 
 ---
 
@@ -307,6 +304,97 @@ The space-stripped variant "약을먹" also catches "약을먹고있어요".
 
 ---
 
+### ISS-016: Temporal overall direction too strict for "improved" — `CLOSED`
+
+| Field | Value |
+|---|---|
+| **Severity** | major |
+| **Found** | RPT-020 longitudinal evaluation (2026-06-25) |
+| **Fixed** | RPT-020 (2026-06-25) |
+| **Component** | `src/agents/temporal_summary.py` |
+
+**Description:** VP-002 (이준호, improving) returned `unchanged` overall direction despite 2 of 3 domains being `improved` (PHQ-9 improved, GAD-7 unchanged, CTRS improved). The voting logic required ALL domains to be `improved` for an overall `improved` result — `all([improved, unchanged, improved])` → False → unchanged.
+
+**Root cause:** `all(d == improved for d in directions)` is too strict. A patient improving in 2/3 domains should be classified as improving.
+
+**Fix:** Changed to majority vote: `improved_count > len(directions) / 2` → improved. Still preserves "worsened takes priority" safety rule.
+
+**Impact:** Revisit patients with clinically significant improvement in most domains would be reported as "unchanged" — **underreporting improvement, may affect treatment continuation decisions**.
+
+**Verification:** VP-002 now correctly returns `improved`. VP-004 (all worsened) unaffected. Mixed 1-improved-2-unchanged correctly returns `unchanged`.
+
+---
+
+### ISS-014: Temporal all-unknown → false "improved" direction — `CLOSED`
+
+| Field | Value |
+|---|---|
+| **Severity** | major |
+| **Found** | RPT-020 stress testing (2026-06-25) |
+| **Fixed** | RPT-020 (2026-06-25) |
+| **Component** | `src/agents/temporal_summary.py` |
+
+**Description:** When all domain trends (PHQ-9, GAD-7, CTRS) are `unknown` (no scale data provided), the overall direction was incorrectly reported as `improved` instead of `unknown`.
+
+**Root cause:** Python's `all()` returns `True` for empty iterables. The voting logic filtered out `unknown` directions, then `all(d == improved for d in [])` → `True` → `improved`.
+
+**Fix:** Added `if not directions: overall = unknown` check before the majority vote.
+
+**Impact:** Revisit patients with no prior/current scale data would incorrectly show "improved" status in handoff reports. **Clinically misleading.**
+
+---
+
+### ISS-015: Floating-point sentiment polarity comparison — `CLOSED`
+
+| Field | Value |
+|---|---|
+| **Severity** | minor |
+| **Found** | RPT-020 stress testing (2026-06-25) |
+| **Fixed** | RPT-020 (2026-06-25) |
+| **Component** | `src/agents/temporal_summary.py` |
+
+**Description:** Sentiment polarity delta comparison `delta > 0.3` was affected by floating-point precision. `0.1 - (-0.2) = 0.30000000000000004 > 0.3` → incorrectly classified as `improved` instead of `unchanged`.
+
+**Root cause:** IEEE 754 floating-point arithmetic. `0.1 + 0.2 ≠ 0.3` in binary.
+
+**Fix:** Added `round(delta, 10)` to eliminate spurious precision bits before threshold comparison.
+
+---
+
+### ISS-017: InputNormalizer missing 4 HIGH-tier safety keywords — `CLOSED`
+
+| Field | Value |
+|---|---|
+| **Severity** | major |
+| **Found** | RPT-022 audit (2026-06-30) |
+| **Fixed** | RPT-022 (2026-06-30) |
+| **Component** | `src/agents/input_normalizer.py` |
+
+**Description:** `_SAFETY_EXPRESSIONS` frozenset was missing 4 HIGH-tier keywords from SafetyClassifier: "죽고" (suicidal), "해치고 싶" (harm to others), "때리고 싶" (violence), "죽이고 싶" (homicidal). These could be silently removed during STT normalization without triggering the safety preservation check.
+
+**Fix:** Added all 4 missing keywords plus tier comments to `_SAFETY_EXPRESSIONS`.
+
+**Impact:** Harm-to-others expressions and a suicidal variant could be lost during input normalization. **Safety-critical.**
+
+---
+
+### ISS-018: HandoffInput.SlotData missing 4 clinical fields — `CLOSED`
+
+| Field | Value |
+|---|---|
+| **Severity** | major |
+| **Found** | RPT-022 audit (2026-06-30) |
+| **Fixed** | RPT-022 (2026-06-30) |
+| **Component** | `src/schemas/handoff.py`, `src/agents/orchestrator.py` |
+
+**Description:** `HandoffInput.SlotData` was missing 4 fields that exist in `ALL_SLOT_KEYS`: `history_of_present_illness`, `psychosocial_context`, `substance_use`, `energy`. The orchestrator's `_build_handoff_input()` silently dropped these collected slot values when building the handoff report input.
+
+**Fix:** Added all 4 missing fields to `SlotData`. Updated `_build_handoff_input()` to populate them.
+
+**Impact:** Handoff reports would be missing present illness history, psychosocial context, substance use, and energy level data even when collected. **Clinical data loss.**
+
+---
+
 ## Issue Statistics
 
 ### By Severity
@@ -314,10 +402,10 @@ The space-stripped variant "약을먹" also catches "약을먹고있어요".
 | Severity | Open | Closed | Total |
 |---|---|---|---|
 | critical | 0 | 3 | 3 |
-| major | 2 | 2 | 4 |
-| minor | 2 | 2 | 4 |
-| info | 1 | 0 | 1 |
-| **Total** | **5** | **7** | **12** |
+| major | 1 | 3 | 4 |
+| minor | 1 | 2 | 3 |
+| info | 0 | 3 | 3 |
+| **Total** | **2** | **11** | **13** |
 
 ### By Component
 
@@ -326,7 +414,7 @@ The space-stripped variant "약을먹" also catches "약을먹고있어요".
 | Safety classifier | 0 | 2 | 2 |
 | Simulation framework | 1 | 2 | 3 |
 | Dialogue/prompts | 2 | 0 | 2 |
-| Orchestrator | 1 | 0 | 1 |
+| Orchestrator | 0 | 1 | 1 |
 | STT/OCR | 1 | 0 | 1 |
 | Schemas/conventions | 0 | 2 | 2 |
 | Checklist process | 0 | 1 | 1 |
