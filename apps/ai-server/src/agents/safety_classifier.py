@@ -33,8 +33,13 @@ _CRITICAL_KEYWORDS: list[tuple[str, str]] = [
     ("자해", "self_harm"),
     ("손목을 긋", "self_harm"),
     ("손목을긋", "self_harm"),
+    ("손목을 그", "self_harm"),
+    ("손목을그", "self_harm"),
     ("칼로", "self_harm"),
-    ("약을 먹", "self_harm_overdose"),
+    ("약을 많이 먹", "self_harm_overdose"),
+    ("약을많이먹", "self_harm_overdose"),
+    ("약물 과다", "self_harm_overdose"),
+    ("약물과다", "self_harm_overdose"),
 ]
 
 _HIGH_KEYWORDS: list[tuple[str, str]] = [
@@ -232,12 +237,15 @@ class SafetyClassifierAgent(BaseAgent):
                 except Exception as fb_exc:
                     logger.error("Fallback safety classification also failed: %s", fb_exc)
 
-            # All LLM paths failed — return conservative default
+            # All LLM paths failed — return none for LLM path.
+            # The merge with rule_classify result preserves any danger the rules found.
+            # If BOTH rule + LLM fail to detect anything, the orchestrator's safety
+            # timeout handler defaults to CTRS 2 as the safe-side fallback.
             return (
                 SafetyClassification(
                     risk_level=RiskLevel.none,
                     confidence=0.0,
-                    reason_summary="All LLM paths failed — rule engine only",
+                    reason_summary="LLM classification unavailable — using rule engine only",
                 ),
                 "none",
                 0.0,

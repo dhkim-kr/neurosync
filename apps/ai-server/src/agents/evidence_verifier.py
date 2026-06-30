@@ -38,6 +38,10 @@ class EvidenceVerifierInput(AgentInput):
 
     report_markdown: str = Field(..., description="The handoff report to verify")
     evidence_packets: list[EvidencePacket] = Field(default_factory=list)
+    is_first_visit: bool = Field(default=True)
+    has_scale_scores: bool = Field(default=False)
+    has_ocr_documents: bool = Field(default=False)
+    ctrs_level: int | None = Field(default=None, description="CTRS 1-5 for action alignment check")
 
 
 class EvidenceVerifierOutput(AgentOutput):
@@ -104,6 +108,21 @@ class EvidenceVerifierAgent(BaseAgent):
         # ── Check 3: Treatment violations ────────────────────────────
         treat_violations = self._check_treatment_violations(inp.report_markdown)
         issues.extend(treat_violations)
+
+        # ── Check 4: 12-section completeness ─────────────────────────
+        section_issues = self._check_section_completeness(
+            inp.report_markdown, inp.is_first_visit, inp.has_scale_scores, inp.has_ocr_documents
+        )
+        issues.extend(section_issues)
+
+        # ── Check 5: CTRS-action alignment ───────────────────────────
+        if inp.ctrs_level is not None:
+            ctrs_issues = self._check_ctrs_action_alignment(inp.report_markdown, inp.ctrs_level)
+            issues.extend(ctrs_issues)
+
+        # ── Check 6: Dangling references ─────────────────────────────
+        ref_issues = self._check_dangling_references(inp.report_markdown)
+        issues.extend(ref_issues)
 
         # ── Determine action ─────────────────────────────────────────
         error_count = sum(1 for i in issues if i.severity == "error")
@@ -210,4 +229,128 @@ class EvidenceVerifierAgent(BaseAgent):
                         severity="error",
                     )
                 )
+        return issues
+
+    # ── New checks (Sprint 2) ────────────────────────────────────────
+
+    _SECTION_HEADER_RE = re.compile(r"^##\s+섹션\s+(\d+)\.", re.MULTILINE)
+
+    _ALWAYS_REQUIRED = {1, 2, 3, 4, 5, 10, 11, 12}
+
+    def _check_section_completeness(
+        self,
+        report: str,
+        is_first_visit: bool,
+        has_scale_scores: bool,
+        has_ocr_documents: bool,
+    ) -> list[VerifierIssue]:
+        """Check that all mandatory sections are present."""
+        issues: list[VerifierIssue] = []
+        found_sections = {int(m.group(1)) for m in self._SECTION_HEADER_RE.finditer(report)}
+
+        # Always required
+        for s in self._ALWAYS_REQUIRED:
+            if s not in found_sections:
+                issues.append(VerifierIssue(
+                    issue_type="missing_section",
+                    description=f"섹션 {s} 누락 (필수)",
+                    location=f"섹션 {s}",
+                    severity="error",
+                ))
+
+        # Conditional: section 6 (scales), 7 (past history — always include), 8 (OCR), 9 (longitudinal)
+        if has_scale_scores and 6 not in found_sections:
+            issues.append(VerifierIssue(
+                issue_type="missing_section",
+                description="섹션 6 (구조화 척도 결과) 누락 — 척도 점수가 제공되었으므로 필수",
+                location="섹션 6",
+                severity="warning",
+            ))
+        if has_ocr_documents and 8 not in found_sections:
+            issues.append(VerifierIssue(
+                issue_type="missing_section",
+                description="섹션 8 (업로드 문서 요약) 누락 — OCR 문서가 제공되었으므로 필수",
+                location="섹션 8",
+                severity="warning",
+            ))
+        if not is_first_visit and 9 not in found_sections:
+            issues.append(VerifierIssue(
+                issue_type="missing_section",
+                description="섹션 9 (종단적 상태 변화) 누락 — 재진 환자이므로 필수",
+                location="섹션 9",
+                severity="warning",
+            ))
+
+        return issues
+
+    def _check_ctrs_action_alignment(self, report: str, ctrs_level: int) -> list[VerifierIssue]:
+        """Verify CTRS level matches recommended actions in section 11."""
+        issues: list[VerifierIssue] = []
+
+        # Extract section 11 content
+        sec11_match = re.search(
+            r"##\s+섹션\s+11\..+?(?=##\s+섹션\s+12\.|\Z)", report, re.DOTALL
+        )
+        if not sec11_match:
+            return issues  # section 11 missing is caught by completeness check
+
+        sec11 = sec11_match.group()
+
+        if ctrs_level <= 1 and not re.search(r"119|112|응급", sec11):
+            issues.append(VerifierIssue(
+                issue_type="ctrs_action_mismatch",
+                description="CTRS 1 (초응급)인데 섹션 11에 119/112/응급 안내가 없음",
+                location="섹션 11",
+                severity="error",
+            ))
+        elif ctrs_level == 2 and not re.search(r"109|119|긴급|위기상담", sec11):
+            issues.append(VerifierIssue(
+                issue_type="ctrs_action_mismatch",
+                description="CTRS 2 (고위험)인데 섹션 11에 109/119/긴급/위기상담 안내가 없음",
+                location="섹션 11",
+                severity="error",
+            ))
+        elif ctrs_level == 3 and not re.search(r"정신건강의학과|109|위기", sec11):
+            issues.append(VerifierIssue(
+                issue_type="ctrs_action_mismatch",
+                description="CTRS 3 (급성기)인데 섹션 11에 정신건강의학과/109/위기 안내가 없음",
+                location="섹션 11",
+                severity="warning",
+            ))
+
+        return issues
+
+    def _check_dangling_references(self, report: str) -> list[VerifierIssue]:
+        """Check for evidence IDs in body not in registry and vice versa."""
+        issues: list[VerifierIssue] = []
+
+        # Split at section 12
+        sec12_match = re.search(r"##\s+섹션\s+12\.", report)
+        if not sec12_match:
+            return issues
+
+        body = report[:sec12_match.start()]
+        registry = report[sec12_match.start():]
+
+        body_refs = set(_EVIDENCE_REF_RE.findall(body))
+        registry_refs = set(_EVIDENCE_REF_RE.findall(registry))
+
+        # Body refs not in registry
+        for ref in body_refs - registry_refs:
+            issues.append(VerifierIssue(
+                issue_type="dangling_reference",
+                description=f"{ref} 본문에 인용되었지만 섹션 12 근거 레지스트리에 없음",
+                location="섹션 12",
+                severity="warning",
+            ))
+
+        # Registry refs not in body
+        for ref in registry_refs - body_refs:
+            issues.append(VerifierIssue(
+                issue_type="orphan_evidence",
+                description=f"{ref} 섹션 12에 등록되었지만 본문에서 인용되지 않음",
+                location="섹션 12",
+                severity="warning",
+            ))
+
         return issues
