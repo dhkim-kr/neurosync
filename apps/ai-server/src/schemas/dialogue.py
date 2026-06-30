@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
@@ -25,6 +25,10 @@ class DialogueInput(AgentInput):
     safety_result: Optional[dict[str, str]] = Field(
         default=None,
         description="Latest safety classification if available",
+    )
+    session_state: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Orchestrator session state from previous turn (pass-through)",
     )
 
 
@@ -51,4 +55,12 @@ class DialogueOutput(AgentOutput):
     all_slots: dict[str, str] = Field(
         default_factory=dict,
         description="Merged slot state after this turn",
+    )
+    session_state: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Updated orchestrator session state for next turn",
+    )
+    handoff_ready: bool = Field(
+        default=False,
+        description="True when slot coverage threshold reached — trigger handoff",
     )

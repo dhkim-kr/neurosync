@@ -11,9 +11,13 @@ from src.schemas.common import EvidencePacket, RiskLevel
 
 
 class SlotData(BaseModel):
-    """Collected clinical slot data from the dialogue session."""
+    """Collected clinical slot data from the dialogue session.
+
+    Fields map to ALL_SLOT_KEYS in clinical_slot.py.
+    """
 
     chief_complaint: Optional[str] = None
+    history_of_present_illness: Optional[str] = None
     onset: Optional[str] = None
     duration: Optional[str] = None
     triggers: Optional[str] = None
@@ -22,10 +26,13 @@ class SlotData(BaseModel):
     mood: Optional[str] = None
     anxiety: Optional[str] = None
     concentration: Optional[str] = None
+    energy: Optional[str] = None
     functional_impairment: Optional[str] = None
     medication: Optional[str] = None
     past_psychiatric_history: Optional[str] = None
     risk_factors: Optional[str] = None
+    psychosocial_context: Optional[str] = None
+    substance_use: Optional[str] = None
 
 
 class ScaleScore(BaseModel):
@@ -63,6 +70,18 @@ class HandoffOutput(AgentOutput):
     report_markdown: str = Field(
         ...,
         description="Full handoff report in Markdown format",
+    )
+    report_json: Optional[dict] = Field(
+        default=None,
+        description="Structured JSON parsed from the 12-section report",
+    )
+    report_pdf_base64: Optional[str] = Field(
+        default=None,
+        description="Base64-encoded PDF of the report (None if unavailable)",
+    )
+    trend_plot_base64: Optional[str] = Field(
+        default=None,
+        description="Base64-encoded PNG of longitudinal trend line chart",
     )
     evidence_packets: list[EvidencePacket] = Field(default_factory=list)
     missing_slots: list[str] = Field(

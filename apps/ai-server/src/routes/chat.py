@@ -1,4 +1,4 @@
-"""POST /ai/chat/respond — Dialogue endpoint with safety gate."""
+"""POST /ai/chat/respond — Dialogue endpoint with orchestrator-managed safety gate."""
 
 from __future__ import annotations
 
@@ -11,13 +11,16 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
 
 from src.adapters.base import ChatMessage, LLMAdapter
-from src.agents.safety_classifier import SafetyClassifierAgent
+from src.agents.orchestrator import OrchestratorAgent
 from src.dependencies import get_model_router, get_prompt_loader
 from src.prompts.loader import PromptLoader
 from src.routing.model_router import ModelRouter
-from src.schemas.common import RiskLevel
 from src.schemas.dialogue import DialogueInput, DialogueLLMResponse, DialogueOutput
-from src.schemas.safety import SafetyInput, SafetyOutput
+from src.schemas.orchestrator import (
+    OrchestratorInput,
+    SessionStage,
+    SessionState,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -26,22 +29,12 @@ router = APIRouter(prefix="/ai/chat", tags=["chat"])
 _DIALOGUE_AGENT_NAME = "dialogue"
 _PROMPT_VERSION = "v1"
 
-# Risk levels that block normal dialogue and trigger crisis protocol
-_CRISIS_LEVELS = {RiskLevel.high, RiskLevel.critical}
 
-_CRISIS_RESPONSE = (
-    "지금 많이 힘드시군요. 당신의 이야기를 듣고 있습니다. "
-    "혼자 감당하지 않으셔도 됩니다. "
-    "지금 바로 전문 상담원과 이야기하실 수 있습니다. "
-    "자살예방상담전화 1393, 정신건강위기상담전화 1577-0199로 연락해 주세요."
-)
-
-
-def _get_safety_agent(
+def _get_orchestrator(
     model_router: ModelRouter = Depends(get_model_router),
     prompt_loader: PromptLoader = Depends(get_prompt_loader),
-) -> SafetyClassifierAgent:
-    return SafetyClassifierAgent(model_router=model_router, prompt_loader=prompt_loader)
+) -> OrchestratorAgent:
+    return OrchestratorAgent(model_router=model_router, prompt_loader=prompt_loader)
 
 
 @router.post("/respond", response_model=DialogueOutput)
@@ -49,12 +42,11 @@ async def respond(
     body: DialogueInput,
     model_router: ModelRouter = Depends(get_model_router),
     prompt_loader: PromptLoader = Depends(get_prompt_loader),
-    safety_agent: SafetyClassifierAgent = Depends(_get_safety_agent),
+    orchestrator: OrchestratorAgent = Depends(_get_orchestrator),
 ) -> DialogueOutput:
-    """Process a user chat message: safety gate -> dialogue LLM -> response.
+    """Process a user chat message through the orchestrator pipeline.
 
-    If the safety gate detects high/critical risk, the normal dialogue is
-    bypassed and a crisis protocol response is returned immediately.
+    Flow: OrchestratorAgent (safety gate + state) → Dialogue LLM (if not crisis) → response.
     """
     start = time.perf_counter()
 
@@ -67,43 +59,68 @@ async def respond(
         body.session_id,
     )
 
-    # ── Step 1: Safety gate ──────────────────────────────────────────
-    safety_input = SafetyInput(
+    # ── Step 1: Orchestrator turn (safety gate + state management) ───
+    # Restore session state from previous turn if available
+    session_state = None
+    if body.session_state:
+        try:
+            session_state = SessionState.model_validate(body.session_state)
+        except Exception as exc:
+            logger.warning("Invalid session_state, starting fresh: %s", exc)
+
+    orch_input = OrchestratorInput(
         session_id=body.session_id,
-        request_id=body.request_id,
-        user_message=body.user_message,
-        conversation_history=body.conversation_history,
+        patient_id=body.extra.get("patient_id", ""),
+        raw_input=body.user_message,
+        session_state=session_state,
     )
 
     try:
-        safety_result: SafetyOutput = await safety_agent.run(safety_input)
+        orch_result = await orchestrator.process_turn(orch_input)
     except Exception as exc:
-        logger.error("Safety gate failed: %s", exc, exc_info=True)
-        # Safety failure is non-negotiable — do not proceed without classification
+        logger.error("Orchestrator failed: %s", exc, exc_info=True)
         raise HTTPException(
-            status_code=500, detail="Safety classification unavailable"
+            status_code=500, detail="Pipeline orchestration failed"
         ) from exc
 
-    # Crisis path — bypass dialogue
-    if safety_result.risk_level in _CRISIS_LEVELS:
+    # ── Step 2: Handle crisis — bypass dialogue LLM ─────────────────
+    if orch_result.crisis_triggered:
         logger.warning(
-            "Crisis detected (risk=%s) — bypassing dialogue",
-            safety_result.risk_level,
+            "Crisis detected (CTRS=%s) — bypassing dialogue",
+            orch_result.safety_status.ctrs_level,
         )
         latency_ms = (time.perf_counter() - start) * 1000
         return DialogueOutput(
-            model_used=safety_result.model_used,
+            model_used="orchestrator",
             prompt_version=_PROMPT_VERSION,
             latency_ms=latency_ms,
-            reason_summary=f"Crisis protocol activated: {safety_result.risk_level}",
-            assistant_response=_CRISIS_RESPONSE,
+            reason_summary=f"Crisis protocol: CTRS {orch_result.safety_status.ctrs_level}",
+            assistant_response=orch_result.assistant_response,
             slot_updates={},
-            risk_level=safety_result.risk_level,
+            risk_level=orch_result.safety_status.risk_level,
             requires_human_review=True,
             all_slots=dict(body.filled_slots),
+            session_state=orch_result.session_state.model_dump(),
         )
 
-    # ── Step 2: Dialogue LLM ────────────────────────────────────────
+    # ── Step 3: Handle handoff ready — no more dialogue needed ──────
+    if orch_result.handoff_ready:
+        latency_ms = (time.perf_counter() - start) * 1000
+        return DialogueOutput(
+            model_used="orchestrator",
+            prompt_version=_PROMPT_VERSION,
+            latency_ms=latency_ms,
+            reason_summary="Handoff ready — slot coverage threshold reached",
+            assistant_response="충분한 정보가 수집되었습니다. 사전문진 보고서를 작성하겠습니다.",
+            slot_updates={},
+            risk_level=orch_result.safety_status.risk_level,
+            requires_human_review=False,
+            all_slots=dict(body.filled_slots),
+            session_state=orch_result.session_state.model_dump(),
+            handoff_ready=True,
+        )
+
+    # ── Step 4: Dialogue LLM (orchestrator says it's safe to proceed) ──
     try:
         system_prompt = prompt_loader.load_system_prompt(_DIALOGUE_AGENT_NAME, _PROMPT_VERSION)
     except FileNotFoundError:
@@ -114,10 +131,10 @@ async def respond(
             "JSON으로 응답하세요: {assistant_response, slot_updates, risk_level, requires_human_review, reason_summary}"
         )
 
-    # Build context about filled AND missing slots
-    _ESSENTIAL_SLOTS = ["chief_complaint", "onset", "duration", "functional_impairment", "risk_factors"]
-    filled_list = [k for k, v in body.filled_slots.items() if v]
-    missing_essential = [s for s in _ESSENTIAL_SLOTS if s not in filled_list]
+    # Build slot context from orchestrator state
+    state = orch_result.session_state
+    filled_list = state.filled_slots
+    missing_essential = state.missing_essential_slots
 
     parts = []
     if filled_list:
@@ -185,21 +202,23 @@ async def respond(
         )
         model_router.record_success(fallback.adapter_name)
 
-    # ── Step 3: Parse dialogue response ──────────────────────────────
+    # ── Step 5: Parse dialogue response + update orchestrator state ──
     try:
         data = json.loads(resp.content)
         llm_resp = DialogueLLMResponse.model_validate(data)
     except (json.JSONDecodeError, Exception) as parse_exc:
         logger.warning("Failed to parse dialogue response as JSON: %s", parse_exc)
-        # Graceful degradation: use raw content as response
         llm_resp = DialogueLLMResponse(
             assistant_response=resp.content[:200],
             reason_summary="JSON parse failed — using raw response",
         )
 
-    # Merge slots
+    # Merge slots and update orchestrator state
     merged_slots = dict(body.filled_slots)
     merged_slots.update(llm_resp.slot_updates)
+
+    OrchestratorAgent.update_slots(state, llm_resp.slot_updates)
+    OrchestratorAgent.add_assistant_turn(state, llm_resp.assistant_response)
 
     latency_ms = (time.perf_counter() - start) * 1000
 
@@ -213,4 +232,5 @@ async def respond(
         risk_level=llm_resp.risk_level,
         requires_human_review=llm_resp.requires_human_review,
         all_slots=merged_slots,
+        session_state=state.model_dump(),
     )
