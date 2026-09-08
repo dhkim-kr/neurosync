@@ -78,6 +78,37 @@
 | 합성 시나리오 기반 기능·근거 검증 | 중간평가 완료 |
 | 전문의 보고서 평가와 협력병원 PoC | 후속 검증 계획 |
 | 조건부 호출·캐싱·비동기 보고서 생성 | 지연·비용 개선 계획 |
-| 공개 배포 패키지·설치 가이드·시연 영상 | **To be uploaded** |
+| 공개 배포 패키지·시연 영상 | **To be uploaded** |
 
 출처: 『2026년도 인공지능 챔피언 중간결과보고서 NeuroSync』, §2.2, §3.1, §3.3.1. 수치는 보고서의 시험 조건에서 보고된 결과다.
+
+
+## 구현 및 로컬 개발
+
+현재 저장소에는 API, AI 서버, 환자 앱, 의료진 웹과 공유 계약 코드가 포함되어 있습니다.
+
+| 경로 | 역할 |
+|---|---|
+| [apps/api/](apps/api/) | 플랫폼 API |
+| [apps/ai-server/](apps/ai-server/) | AI 서비스 |
+| [apps/mobile/](apps/mobile/) | 환자 모바일 앱 |
+| [apps/web/](apps/web/) | 의료진 웹 |
+| [packages/shared-contracts/](packages/shared-contracts/) | 서비스 간 공유 계약 |
+| [infra/](infra/) | 배포 및 인프라 설정 |
+
+루트 `package.json` 기준 Node.js 20.11 이상과 pnpm 9 이상이 필요하며, 지정 패키지 매니저는 pnpm 9.15.0입니다. Python 서비스는 `uv`로 관리합니다. Docker Compose와 Make를 사용할 수 있는 셸에서 루트 [Makefile](Makefile)의 개발 명령을 실행합니다. 서비스별 환경변수와 외부 API 자격증명은 해당 앱의 설정에 맞춰 준비해야 합니다.
+
+```bash
+make bootstrap
+make dev
+```
+
+`make bootstrap`은 JS 의존성과 Python 가상환경을 구성합니다. `make dev`는 PostgreSQL·Redis를 기동한 뒤 Turbo로 개발 프로세스를 실행합니다. 코드에 정의된 점검 명령은 다음과 같습니다.
+
+```bash
+make test
+make typecheck
+make lint
+```
+
+위 명령은 현재 개발 진입점을 설명합니다. README 갱신 과정에서 서비스 기동이나 전체 테스트를 새로 실행하지는 않았습니다.
